@@ -1,22 +1,21 @@
 /* ==========================================================================
-   Beacon Innovation Hub — Password-only Admin Dashboard
+   Beacon Innovation Hub — Supabase Administrator Dashboard
    ========================================================================== */
 
 (() => {
   'use strict';
 
-  /* --------------------------------------------------------------------------
+  /* ==========================================================================
      Configuration
-     -------------------------------------------------------------------------- */
+     ========================================================================== */
 
-  const ADMIN_PASSWORD = 'BeaconAdmin@2026';
-  const ADMIN_SESSION_KEY = 'bih_admin_session';
+  const ADMIN_EMAIL = 'philanimaraps@gmail.com';
 
-  const TYPE_LABEL = {
+  const TYPE_LABELS = {
     update: 'Update',
     event: 'Event',
     article: 'Article',
-    media: 'Photo'
+    media: 'Gallery photograph'
   };
 
   let currentTab = 'update';
@@ -24,9 +23,37 @@
   let pendingImage = '';
   let dashboardInitialised = false;
 
-  /* --------------------------------------------------------------------------
-     General utilities
-     -------------------------------------------------------------------------- */
+  /* ==========================================================================
+     DOM helpers
+     ========================================================================== */
+
+  function getElement(id) {
+    return document.getElementById(id);
+  }
+
+  function setMessage(element, message, type = 'error') {
+    if (!element) {
+      return;
+    }
+
+    element.textContent = message;
+    element.dataset.type = type;
+
+    if (type === 'success') {
+      element.style.color = '#1b7f46';
+    } else {
+      element.style.color = '#b42318';
+    }
+  }
+
+  function clearMessage(element) {
+    if (!element) {
+      return;
+    }
+
+    element.textContent = '';
+    element.removeAttribute('data-type');
+  }
 
   function showToast(message) {
     let toast = document.querySelector('.toast');
@@ -34,6 +61,8 @@
     if (!toast) {
       toast = document.createElement('div');
       toast.className = 'toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
       document.body.appendChild(toast);
     }
 
@@ -42,22 +71,141 @@
 
     clearTimeout(toast._timer);
 
-    toast._timer = setTimeout(() => {
+    toast._timer = window.setTimeout(() => {
       toast.classList.remove('show');
-    }, 2400);
+    }, 2600);
   }
 
-  function getStorageType(type) {
-    return type === 'media' ? 'photo' : type;
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
   }
 
-  function getInterfaceType(type) {
-    return type === 'photo' ? 'media' : type;
+  /* ==========================================================================
+     Supabase helpers
+     ========================================================================== */
+
+  function getSupabaseClient() {
+    return window.supabaseClient;
   }
+
+  function ensureSupabaseClient() {
+    const client = getSupabaseClient();
+
+    if (!client) {
+      throw new Error(
+        'Supabase is not configured. Check supabase-config.js and the script order in admin.html.'
+      );
+    }
+
+    return client;
+  }
+
+  async function getCurrentSession() {
+    const client = ensureSupabaseClient();
+
+    const {
+      data,
+      error
+    } = await client.auth.getSession();
+
+    if (error) {
+      throw error;
+    }
+
+    return data.session;
+  }
+
+  async function verifyAdministrator(user) {
+    if (!user) {
+      return false;
+    }
+
+    const userEmail = String(user.email || '')
+      .trim()
+      .toLowerCase();
+
+    if (userEmail !== ADMIN_EMAIL.toLowerCase()) {
+      return false;
+    }
+
+    const client = ensureSupabaseClient();
+
+    /*
+     * Preferred check:
+     * Calls the public.is_admin() database function.
+     */
+    const {
+      data: rpcResult,
+      error: rpcError
+    } = await client.rpc('is_admin');
+
+    if (!rpcError) {
+      return rpcResult === true;
+    }
+
+    console.warn(
+      'The is_admin() RPC check failed. Trying admin_users table.',
+      rpcError
+    );
+
+    /*
+     * Fallback check:
+     * Looks for the authenticated email in admin_users.
+     */
+    const {
+      data: adminRecord,
+      error: tableError
+    } = await client
+      .from('admin_users')
+      .select('email, role')
+      .eq('email', userEmail)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (tableError) {
+      console.error(
+        'The admin_users fallback check failed:',
+        tableError
+      );
+
+      throw new Error(
+        'Your account was authenticated, but administrator permission could not be verified.'
+      );
+    }
+
+    return Boolean(adminRecord);
+  }
+
+  async function requireAdministrator() {
+    const session = await getCurrentSession();
+
+    if (!session?.user) {
+      return null;
+    }
+
+    const authorised = await verifyAdministrator(
+      session.user
+    );
+
+    if (!authorised) {
+      return null;
+    }
+
+    return session.user;
+  }
+
+  /* ==========================================================================
+     Login and dashboard visibility
+     ========================================================================== */
 
   function showLogin() {
-    const loginBox = document.getElementById('login-box');
-    const dashboard = document.getElementById('dashboard');
+    const loginBox = getElement('login-box');
+    const dashboard = getElement('dashboard');
 
     if (loginBox) {
       loginBox.hidden = false;
@@ -70,9 +218,12 @@
     }
   }
 
-  function showDashboard() {
-    const loginBox = document.getElementById('login-box');
-    const dashboard = document.getElementById('dashboard');
+  function showDashboard(user) {
+    const loginBox = getElement('login-box');
+    const dashboard = getElement('dashboard');
+    const sessionPill = document.querySelector(
+      '.session-pill'
+    );
 
     if (loginBox) {
       loginBox.hidden = true;
@@ -84,101 +235,283 @@
       dashboard.style.display = 'block';
     }
 
+    if (sessionPill) {
+      sessionPill.textContent =
+        user?.email || 'Administrator signed in';
+    }
+
     if (!dashboardInitialised) {
       initialiseDashboard();
       dashboardInitialised = true;
     }
   }
 
-  function isSignedIn() {
-    return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
+  function setLoginButtonLoading(loading) {
+    const loginForm = getElement('login-form');
+
+    if (!loginForm) {
+      return;
+    }
+
+    const button = loginForm.querySelector(
+      'button[type="submit"]'
+    );
+
+    if (!button) {
+      return;
+    }
+
+    button.disabled = loading;
+    button.textContent = loading
+      ? 'Signing in…'
+      : 'Sign in';
   }
 
-  /* --------------------------------------------------------------------------
-     Password-only login
-     -------------------------------------------------------------------------- */
-
-  function handleLogin(event) {
+  async function handleLogin(event) {
     event.preventDefault();
 
-    const passwordInput = document.getElementById('login-pass');
-    const loginError = document.getElementById('login-error');
+    const client = getSupabaseClient();
+    const emailInput = getElement('login-email');
+    const passwordInput = getElement('login-pass');
+    const loginError = getElement('login-error');
 
-    if (!passwordInput || !loginError) {
+    clearMessage(loginError);
+
+    if (!client) {
+      setMessage(
+        loginError,
+        'Supabase failed to load. Check supabase-config.js.'
+      );
+
       return;
     }
 
-    const enteredPassword = passwordInput.value;
+    if (!emailInput || !passwordInput) {
+      setMessage(
+        loginError,
+        'The login form is missing the email or password field.'
+      );
 
-    loginError.textContent = '';
-
-    if (enteredPassword !== ADMIN_PASSWORD) {
-      loginError.textContent = 'Incorrect administrator password.';
-      passwordInput.value = '';
-      passwordInput.focus();
       return;
     }
 
-    sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
+    const email = emailInput.value
+      .trim()
+      .toLowerCase();
 
-    passwordInput.value = '';
+    const password = passwordInput.value;
 
-    showDashboard();
-    showToast('Administrator login successful');
-  }
+    if (email !== ADMIN_EMAIL.toLowerCase()) {
+      setMessage(
+        loginError,
+        'This email address is not registered as the website administrator.'
+      );
 
-  function handleLogout() {
-    sessionStorage.removeItem(ADMIN_SESSION_KEY);
-
-    dashboardInitialised = false;
-
-    showLogin();
-    showToast('Signed out successfully');
-  }
-
-  /* --------------------------------------------------------------------------
-     Application startup
-     -------------------------------------------------------------------------- */
-
-  document.addEventListener('DOMContentLoaded', () => {
-    if (typeof initThemeControls === 'function') {
-      initThemeControls();
+      return;
     }
 
-    const loginForm = document.getElementById('login-form');
-    const logoutButton = document.getElementById('logout-btn');
+    if (!password) {
+      setMessage(
+        loginError,
+        'Enter your administrator password.'
+      );
 
-    if (loginForm) {
-      loginForm.addEventListener('submit', handleLogin);
+      return;
     }
 
-    if (logoutButton) {
-      logoutButton.addEventListener('click', handleLogout);
-    }
+    setLoginButtonLoading(true);
 
-    if (isSignedIn()) {
-      showDashboard();
-    } else {
-      showLogin();
-    }
-  });
-
-  /* --------------------------------------------------------------------------
-     Dashboard setup
-     -------------------------------------------------------------------------- */
-
-  function initialiseDashboard() {
-    document.querySelectorAll('.admin-tab').forEach(tab => {
-      if (tab.dataset.initialised === 'true') {
-        return;
-      }
-
-      tab.addEventListener('click', () => {
-        switchTab(tab.dataset.type);
+    try {
+      const {
+        data,
+        error
+      } = await client.auth.signInWithPassword({
+        email,
+        password
       });
 
-      tab.dataset.initialised = 'true';
-    });
+      if (error) {
+        throw error;
+      }
+
+      if (!data.user) {
+        throw new Error(
+          'Supabase did not return an authenticated user.'
+        );
+      }
+
+      const authorised = await verifyAdministrator(
+        data.user
+      );
+
+      if (!authorised) {
+        await client.auth.signOut();
+
+        throw new Error(
+          'Login succeeded, but this account does not have administrator permission.'
+        );
+      }
+
+      passwordInput.value = '';
+
+      showDashboard(data.user);
+      showToast('Administrator login successful.');
+    } catch (error) {
+      console.error('Administrator login failed:', error);
+
+      let message =
+        error?.message ||
+        'The administrator login failed.';
+
+      if (
+        message.toLowerCase().includes(
+          'invalid login credentials'
+        )
+      ) {
+        message =
+          'Incorrect administrator email or password.';
+      }
+
+      if (
+        message.toLowerCase().includes(
+          'email not confirmed'
+        )
+      ) {
+        message =
+          'Your Supabase email address has not been confirmed.';
+      }
+
+      setMessage(loginError, message);
+    } finally {
+      setLoginButtonLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    const client = getSupabaseClient();
+
+    try {
+      if (client) {
+        const { error } = await client.auth.signOut();
+
+        if (error) {
+          throw error;
+        }
+      }
+    } catch (error) {
+      console.error('Sign-out error:', error);
+    } finally {
+      dashboardInitialised = false;
+      showLogin();
+      showToast('Signed out successfully.');
+    }
+  }
+
+  /* ==========================================================================
+     Password change
+     ========================================================================== */
+
+  async function handlePasswordChange(event) {
+    event.preventDefault();
+
+    const client = getSupabaseClient();
+    const passwordInput = getElement('pass-new');
+    const messageBox = getElement('pass-msg');
+    const submitButton = event.currentTarget.querySelector(
+      'button[type="submit"]'
+    );
+
+    clearMessage(messageBox);
+
+    if (!client) {
+      setMessage(
+        messageBox,
+        'Supabase is not configured.'
+      );
+
+      return;
+    }
+
+    if (!passwordInput) {
+      return;
+    }
+
+    const newPassword = passwordInput.value;
+
+    if (newPassword.length < 8) {
+      setMessage(
+        messageBox,
+        'Your password must contain at least eight characters.'
+      );
+
+      return;
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Updating…';
+    }
+
+    try {
+      const {
+        data,
+        error
+      } = await client.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data.user) {
+        throw new Error(
+          'Supabase did not confirm the password update.'
+        );
+      }
+
+      passwordInput.value = '';
+
+      setMessage(
+        messageBox,
+        'Administrator password updated successfully.',
+        'success'
+      );
+
+      showToast('Password updated successfully.');
+    } catch (error) {
+      console.error('Password update failed:', error);
+
+      setMessage(
+        messageBox,
+        error?.message ||
+          'The password could not be updated.'
+      );
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Update password';
+      }
+    }
+  }
+
+  /* ==========================================================================
+     Dashboard setup
+     ========================================================================== */
+
+  function initialiseDashboard() {
+    document.querySelectorAll('.admin-tab')
+      .forEach(tab => {
+        if (tab.dataset.listenerAttached === 'true') {
+          return;
+        }
+
+        tab.addEventListener('click', () => {
+          switchTab(tab.dataset.type);
+        });
+
+        tab.dataset.listenerAttached = 'true';
+      });
 
     switchTab('update');
   }
@@ -188,94 +521,127 @@
     editingId = null;
     pendingImage = '';
 
-    document.querySelectorAll('.admin-tab').forEach(tab => {
-      tab.classList.toggle(
-        'active',
-        tab.dataset.type === type
-      );
-    });
+    document.querySelectorAll('.admin-tab')
+      .forEach(tab => {
+        tab.classList.toggle(
+          'active',
+          tab.dataset.type === type
+        );
+      });
 
-    const settingsPanel = document.getElementById('settings-panel');
-    const contentPanel = document.getElementById('content-panel');
+    const settingsPanel =
+      getElement('settings-panel');
+
+    const contentPanel =
+      getElement('content-panel');
+
+    const showingSettings = type === 'settings';
 
     if (settingsPanel) {
-      settingsPanel.hidden = type !== 'settings';
+      settingsPanel.hidden = !showingSettings;
       settingsPanel.style.display =
-        type === 'settings' ? 'block' : 'none';
+        showingSettings ? 'block' : 'none';
     }
 
     if (contentPanel) {
-      contentPanel.hidden = type === 'settings';
+      contentPanel.hidden = showingSettings;
       contentPanel.style.display =
-        type === 'settings' ? 'none' : 'grid';
+        showingSettings ? 'none' : 'grid';
     }
 
-    if (type !== 'settings') {
+    if (!showingSettings) {
       renderForm(type);
       renderTable(type);
     }
   }
 
-  /* --------------------------------------------------------------------------
-     Form fields
-     -------------------------------------------------------------------------- */
+  /* ==========================================================================
+     Content form
+     ========================================================================== */
 
-  function fieldsFor(type) {
-    const isMedia = type === 'media';
+  function getStoredType(type) {
+    return type === 'media'
+      ? 'photo'
+      : type;
+  }
+
+  function getInterfaceType(type) {
+    return type === 'photo'
+      ? 'media'
+      : type;
+  }
+
+  function buildFormFields(type) {
+    const media = type === 'media';
 
     const commonFields = `
       <div class="field">
         <label for="f-title">Title</label>
+
         <input
           id="f-title"
+          type="text"
           required
           maxlength="120"
-          placeholder="e.g. Systems Design Night"
+          placeholder="Enter the publication title"
         >
       </div>
 
       <div class="field">
         <label for="f-excerpt">
-          ${isMedia ? 'Caption' : 'Short summary'}
+          ${media ? 'Caption' : 'Short summary'}
         </label>
 
         <textarea
           id="f-excerpt"
           required
           maxlength="220"
-          style="min-height:70px"
-          placeholder="One or two sentences for the card preview"
+          style="min-height:80px"
+          placeholder="${
+            media
+              ? 'Write a caption for the photograph'
+              : 'Write a short preview summary'
+          }"
         ></textarea>
       </div>
     `;
 
     const contentField = `
       <div class="field">
-        <label for="f-content">Full content</label>
+        <label for="f-content">
+          Full content
+        </label>
 
         <textarea
           id="f-content"
           required
-          placeholder="Write the full post. Use blank lines for paragraphs."
+          placeholder="Write the complete publication"
         ></textarea>
       </div>
     `;
 
     const tagsField = `
       <div class="field">
-        <label for="f-tags">Tags (comma separated)</label>
+        <label for="f-tags">
+          Tags
+        </label>
 
         <input
           id="f-tags"
-          placeholder="e.g. architecture, workshop"
+          type="text"
+          placeholder="innovation, software, community"
         >
+
+        <p class="hint">
+          Separate multiple tags with commas.
+        </p>
       </div>
     `;
 
     const imageField = `
       <div class="field">
         <label for="f-image">
-          Image ${isMedia ? '(required)' : '(optional)'}
+          Image ${media ? '(required)' : '(optional)'}
         </label>
 
         <input
@@ -295,7 +661,9 @@
 
     const eventFields = `
       <div class="field">
-        <label for="f-eventdate">Event date and time</label>
+        <label for="f-eventdate">
+          Event date and time
+        </label>
 
         <input
           id="f-eventdate"
@@ -305,11 +673,14 @@
       </div>
 
       <div class="field">
-        <label for="f-location">Location</label>
+        <label for="f-location">
+          Location
+        </label>
 
         <input
           id="f-location"
-          placeholder="e.g. Beacon Hub — Main Floor"
+          type="text"
+          placeholder="Enter the event location"
         >
       </div>
     `;
@@ -328,15 +699,16 @@
       );
     }
 
-    return commonFields + contentField + tagsField + imageField;
+    return (
+      commonFields +
+      contentField +
+      tagsField +
+      imageField
+    );
   }
 
-  /* --------------------------------------------------------------------------
-     Render publishing form
-     -------------------------------------------------------------------------- */
-
   function renderForm(type) {
-    const formWrap = document.getElementById('form-wrap');
+    const formWrap = getElement('form-wrap');
 
     if (!formWrap) {
       return;
@@ -344,15 +716,15 @@
 
     formWrap.innerHTML = `
       <h3 id="form-title">
-        New ${TYPE_LABEL[type]}
+        New ${TYPE_LABELS[type]}
       </h3>
 
       <p class="hint">
-        Complete all required fields before publishing.
+        Complete the required fields before publishing.
       </p>
 
       <form id="post-form">
-        ${fieldsFor(type)}
+        ${buildFormFields(type)}
 
         <div class="form-actions">
           <button
@@ -360,7 +732,7 @@
             class="btn btn-primary btn-block"
             id="submit-btn"
           >
-            Publish ${TYPE_LABEL[type]}
+            Publish ${TYPE_LABELS[type]}
           </button>
 
           <button
@@ -369,142 +741,192 @@
             id="cancel-edit"
             style="display:none"
           >
-            Cancel
+            Cancel editing
           </button>
         </div>
       </form>
     `;
 
-    const imageInput = document.getElementById('f-image');
+    const imageInput = getElement('f-image');
 
     if (imageInput) {
-      imageInput.addEventListener('change', () => {
-        const file = imageInput.files[0];
-
-        if (!file) {
-          return;
-        }
-
-        if (!file.type.startsWith('image/')) {
-          showToast('Please select a valid image file.');
-          imageInput.value = '';
-          return;
-        }
-
-        if (file.size > 3.5 * 1024 * 1024) {
-          showToast('Image too large. Use an image under 3.5 MB.');
-          imageInput.value = '';
-          return;
-        }
-
-        const reader = new FileReader();
-
-        reader.onload = () => {
-          pendingImage = reader.result;
-
-          const preview = document.getElementById(
-            'f-image-preview'
-          );
-
-          if (preview) {
-            preview.innerHTML = `
-              <img
-                src="${pendingImage}"
-                alt="Selected image preview"
-              >
-            `;
-          }
-        };
-
-        reader.onerror = () => {
-          showToast('The selected image could not be read.');
-        };
-
-        reader.readAsDataURL(file);
-      });
+      imageInput.addEventListener(
+        'change',
+        handleImageSelection
+      );
     }
 
-    const postForm = document.getElementById('post-form');
+    const postForm = getElement('post-form');
 
     if (postForm) {
-      postForm.addEventListener('submit', event => {
-        event.preventDefault();
-        savePost(type);
-      });
+      postForm.addEventListener(
+        'submit',
+        event => {
+          event.preventDefault();
+          savePost(type);
+        }
+      );
     }
   }
 
-  /* --------------------------------------------------------------------------
-     Save posts
-     -------------------------------------------------------------------------- */
+  function handleImageSelection(event) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Select a valid image file.');
+      event.target.value = '';
+      return;
+    }
+
+    const maximumSize =
+      3.5 * 1024 * 1024;
+
+    if (file.size > maximumSize) {
+      showToast(
+        'The image is too large. Select an image below 3.5 MB.'
+      );
+
+      event.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      pendingImage = String(reader.result || '');
+
+      const preview =
+        getElement('f-image-preview');
+
+      if (preview) {
+        preview.innerHTML = `
+          <img
+            src="${pendingImage}"
+            alt="Selected image preview"
+          >
+        `;
+      }
+    };
+
+    reader.onerror = () => {
+      showToast(
+        'The selected image could not be read.'
+      );
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  /* ==========================================================================
+     Save content
+     ========================================================================== */
+
+  function ensureStore() {
+    if (
+      typeof window.STORE === 'undefined' ||
+      !window.STORE
+    ) {
+      throw new Error(
+        'store.js could not be loaded.'
+      );
+    }
+
+    return window.STORE;
+  }
 
   function savePost(type) {
-    if (typeof STORE === 'undefined') {
-      showToast('The content store could not be loaded.');
+    let store;
+
+    try {
+      store = ensureStore();
+    } catch (error) {
+      showToast(error.message);
       return;
     }
 
-    const titleInput = document.getElementById('f-title');
-    const excerptInput = document.getElementById('f-excerpt');
+    const titleInput = getElement('f-title');
+    const excerptInput = getElement('f-excerpt');
 
-    if (!titleInput || !excerptInput) {
-      return;
-    }
+    const title =
+      titleInput?.value.trim() || '';
 
-    const title = titleInput.value.trim();
-    const excerpt = excerptInput.value.trim();
+    const excerpt =
+      excerptInput?.value.trim() || '';
 
     if (!title || !excerpt) {
-      showToast('Complete all required fields.');
+      showToast(
+        'Complete the title and summary fields.'
+      );
+
       return;
     }
 
-    const storageType = getStorageType(type);
+    const storedType = getStoredType(type);
 
-    const post = editingId
-      ? STORE.getById(editingId)
-      : { type: storageType };
+    const existingPost = editingId
+      ? store.getById(editingId)
+      : null;
 
-    if (!post) {
-      showToast('The selected post could not be found.');
+    if (editingId && !existingPost) {
+      showToast(
+        'The selected publication could not be found.'
+      );
+
       return;
     }
 
-    post.type = storageType;
+    const post = existingPost || {
+      type: storedType
+    };
+
+    post.type = storedType;
     post.title = title;
     post.excerpt = excerpt;
 
-    const contentInput = document.getElementById('f-content');
+    const contentInput =
+      getElement('f-content');
 
     if (contentInput) {
-      post.content = contentInput.value.trim();
+      post.content =
+        contentInput.value.trim();
 
       if (!post.content) {
-        showToast('Enter the full content.');
+        showToast(
+          'Enter the full publication content.'
+        );
+
         return;
       }
-    } else if (type === 'media') {
+    } else {
       post.content = excerpt;
     }
 
-    const tagsInput = document.getElementById('f-tags');
+    const tagsInput =
+      getElement('f-tags');
 
-    if (tagsInput) {
-      post.tags = tagsInput.value
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(Boolean);
-    }
+    post.tags = tagsInput
+      ? tagsInput.value
+          .split(',')
+          .map(tag => tag.trim())
+          .filter(Boolean)
+      : [];
 
     if (type === 'event') {
       const eventDateInput =
-        document.getElementById('f-eventdate');
+        getElement('f-eventdate');
 
       const locationInput =
-        document.getElementById('f-location');
+        getElement('f-location');
 
-      if (!eventDateInput || !eventDateInput.value) {
-        showToast('Select an event date and time.');
+      if (!eventDateInput?.value) {
+        showToast(
+          'Select the event date and time.'
+        );
+
         return;
       }
 
@@ -512,15 +934,22 @@
         eventDateInput.value
       ).toISOString();
 
-      post.location = locationInput
-        ? locationInput.value.trim()
-        : '';
+      post.location =
+        locationInput?.value.trim() || '';
     }
 
     if (pendingImage) {
       post.image = pendingImage;
-    } else if (type === 'media' && !post.image) {
-      showToast('Please add an image for the gallery post.');
+    }
+
+    if (
+      type === 'media' &&
+      !post.image
+    ) {
+      showToast(
+        'Select an image for the gallery post.'
+      );
+
       return;
     }
 
@@ -530,12 +959,12 @@
       post.date = new Date().toISOString();
     }
 
-    STORE.upsert(post);
+    store.upsert(post);
 
     showToast(
       editingId
-        ? 'Changes saved.'
-        : `${TYPE_LABEL[type]} published.`
+        ? 'Changes saved successfully.'
+        : `${TYPE_LABELS[type]} published successfully.`
     );
 
     editingId = null;
@@ -545,28 +974,34 @@
     renderTable(type);
   }
 
-  /* --------------------------------------------------------------------------
-     Render posts
-     -------------------------------------------------------------------------- */
+  /* ==========================================================================
+     Content list
+     ========================================================================== */
 
   function renderTable(type) {
-    if (typeof STORE === 'undefined') {
+    let store;
+
+    try {
+      store = ensureStore();
+    } catch (error) {
+      showToast(error.message);
       return;
     }
 
-    const storageType = getStorageType(type);
-    const posts = STORE.byType(storageType);
-    const tableWrap = document.getElementById('table-wrap');
+    const tableWrap = getElement('table-wrap');
 
     if (!tableWrap) {
       return;
     }
 
-    if (!posts.length) {
+    const storedType = getStoredType(type);
+    const posts = store.byType(storedType) || [];
+
+    if (posts.length === 0) {
       tableWrap.innerHTML = `
         <div class="empty">
-          No ${TYPE_LABEL[type].toLowerCase()} posts yet.
-          Use the form to publish the first one.
+          No ${TYPE_LABELS[type].toLowerCase()}
+          publications are available yet.
         </div>
       `;
 
@@ -587,20 +1022,25 @@
                     alt=""
                   >
                 `
-                : '<div class="thumb"></div>'
+                : `
+                  <div
+                    class="thumb"
+                    aria-hidden="true"
+                  ></div>
+                `
             }
 
             <div class="info">
               <h4>
-                ${safeText(post.title)}
+                ${escapeHtml(post.title)}
               </h4>
 
               <p>
-                ${formatPostDate(post.date)}
+                ${formatDate(post.date)}
 
                 ${
                   post.eventDate
-                    ? ` · event: ${formatPostDate(post.eventDate)}`
+                    ? ` · Event: ${formatDate(post.eventDate)}`
                     : ''
                 }
               </p>
@@ -609,18 +1049,20 @@
             <div class="row-actions">
               <button
                 class="icon-btn"
-                data-edit="${post.id}"
-                title="Edit"
+                data-edit="${escapeHtml(post.id)}"
                 type="button"
+                title="Edit publication"
+                aria-label="Edit publication"
               >
                 ${editIcon()}
               </button>
 
               <button
                 class="icon-btn del"
-                data-delete="${post.id}"
-                title="Delete"
+                data-delete="${escapeHtml(post.id)}"
                 type="button"
+                title="Delete publication"
+                aria-label="Delete publication"
               >
                 ${trashIcon()}
               </button>
@@ -635,7 +1077,9 @@
       .querySelectorAll('[data-edit]')
       .forEach(button => {
         button.addEventListener('click', () => {
-          loadPostForEditing(button.dataset.edit);
+          loadPostForEditing(
+            button.dataset.edit
+          );
         });
       });
 
@@ -643,151 +1087,196 @@
       .querySelectorAll('[data-delete]')
       .forEach(button => {
         button.addEventListener('click', () => {
-          const confirmed = window.confirm(
-            'Delete this post? This action cannot be undone.'
+          deletePost(
+            button.dataset.delete,
+            type
           );
-
-          if (!confirmed) {
-            return;
-          }
-
-          STORE.remove(button.dataset.delete);
-
-          showToast('Post deleted.');
-          renderTable(type);
         });
       });
   }
 
-  /* --------------------------------------------------------------------------
-     Edit posts
-     -------------------------------------------------------------------------- */
+  function deletePost(id, type) {
+    const confirmed = window.confirm(
+      'Delete this publication? This action cannot be undone.'
+    );
 
-  function loadPostForEditing(id) {
-    if (typeof STORE === 'undefined') {
+    if (!confirmed) {
       return;
     }
 
-    const post = STORE.getById(id);
+    try {
+      const store = ensureStore();
+
+      store.remove(id);
+
+      showToast(
+        'Publication deleted successfully.'
+      );
+
+      renderTable(type);
+    } catch (error) {
+      showToast(error.message);
+    }
+  }
+
+  /* ==========================================================================
+     Edit content
+     ========================================================================== */
+
+  function loadPostForEditing(id) {
+    let store;
+
+    try {
+      store = ensureStore();
+    } catch (error) {
+      showToast(error.message);
+      return;
+    }
+
+    const post = store.getById(id);
 
     if (!post) {
-      showToast('The selected post could not be found.');
+      showToast(
+        'The selected publication could not be found.'
+      );
+
       return;
     }
 
     editingId = id;
     pendingImage = '';
 
-    const interfaceType = getInterfaceType(post.type);
+    const type = getInterfaceType(post.type);
 
-    currentTab = interfaceType;
+    currentTab = type;
 
-    renderForm(interfaceType);
+    document.querySelectorAll('.admin-tab')
+      .forEach(tab => {
+        tab.classList.toggle(
+          'active',
+          tab.dataset.type === type
+        );
+      });
 
-    const formTitle = document.getElementById('form-title');
-    const submitButton = document.getElementById('submit-btn');
-    const cancelButton = document.getElementById('cancel-edit');
+    renderForm(type);
+
+    const formTitle =
+      getElement('form-title');
+
+    const submitButton =
+      getElement('submit-btn');
+
+    const cancelButton =
+      getElement('cancel-edit');
 
     if (formTitle) {
       formTitle.textContent =
-        `Edit ${TYPE_LABEL[interfaceType]}`;
+        `Edit ${TYPE_LABELS[type]}`;
     }
 
     if (submitButton) {
-      submitButton.textContent = 'Save changes';
+      submitButton.textContent =
+        'Save changes';
     }
 
     if (cancelButton) {
-      cancelButton.style.display = 'inline-flex';
+      cancelButton.style.display =
+        'inline-flex';
 
-      cancelButton.addEventListener('click', () => {
-        switchTab(interfaceType);
-      });
+      cancelButton.addEventListener(
+        'click',
+        () => {
+          switchTab(type);
+        }
+      );
     }
 
-    const titleInput = document.getElementById('f-title');
-    const excerptInput = document.getElementById('f-excerpt');
-    const contentInput = document.getElementById('f-content');
-    const tagsInput = document.getElementById('f-tags');
+    const titleInput =
+      getElement('f-title');
+
+    const excerptInput =
+      getElement('f-excerpt');
+
+    const contentInput =
+      getElement('f-content');
+
+    const tagsInput =
+      getElement('f-tags');
 
     if (titleInput) {
-      titleInput.value = post.title || '';
+      titleInput.value =
+        post.title || '';
     }
 
     if (excerptInput) {
-      excerptInput.value = post.excerpt || '';
+      excerptInput.value =
+        post.excerpt || '';
     }
 
     if (contentInput) {
-      contentInput.value = post.content || '';
+      contentInput.value =
+        post.content || '';
     }
 
     if (tagsInput) {
-      tagsInput.value = (post.tags || []).join(', ');
+      tagsInput.value =
+        Array.isArray(post.tags)
+          ? post.tags.join(', ')
+          : '';
     }
 
-    if (interfaceType === 'event') {
+    if (type === 'event') {
       const eventDateInput =
-        document.getElementById('f-eventdate');
+        getElement('f-eventdate');
 
       const locationInput =
-        document.getElementById('f-location');
+        getElement('f-location');
 
       if (eventDateInput) {
-        eventDateInput.value = post.eventDate
-          ? toLocalDateTimeInput(post.eventDate)
-          : '';
+        eventDateInput.value =
+          post.eventDate
+            ? toDateTimeLocal(post.eventDate)
+            : '';
       }
 
       if (locationInput) {
-        locationInput.value = post.location || '';
+        locationInput.value =
+          post.location || '';
       }
     }
 
     if (post.image) {
       const preview =
-        document.getElementById('f-image-preview');
+        getElement('f-image-preview');
 
       if (preview) {
         preview.innerHTML = `
           <img
             src="${post.image}"
-            alt="Current post image"
+            alt="Current publication image"
           >
         `;
       }
     }
 
-    const formWrap = document.getElementById('form-wrap');
-
-    if (formWrap) {
-      formWrap.scrollIntoView({
+    getElement('form-wrap')
+      ?.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       });
-    }
   }
 
-  /* --------------------------------------------------------------------------
-     Formatting helpers
-     -------------------------------------------------------------------------- */
+  /* ==========================================================================
+     Formatting
+     ========================================================================== */
 
-  function safeText(value) {
-    return String(value || '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
-  }
-
-  function formatPostDate(value) {
+  function formatDate(value) {
     if (!value) {
       return '';
     }
 
-    if (typeof fmtDate === 'function') {
-      return fmtDate(value);
+    if (typeof window.fmtDate === 'function') {
+      return window.fmtDate(value);
     }
 
     const date = new Date(value);
@@ -796,15 +1285,18 @@
       return '';
     }
 
-    return date.toLocaleDateString('en-ZA', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    return date.toLocaleDateString(
+      'en-ZA',
+      {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }
+    );
   }
 
-  function toLocalDateTimeInput(isoDate) {
-    const date = new Date(isoDate);
+  function toDateTimeLocal(value) {
+    const date = new Date(value);
 
     if (Number.isNaN(date.getTime())) {
       return '';
@@ -822,15 +1314,11 @@
     );
   }
 
-  /* --------------------------------------------------------------------------
-     Icons
-     -------------------------------------------------------------------------- */
-
   function editIcon() {
     return `
       <svg
-        width="14"
-        height="14"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -838,7 +1326,9 @@
         aria-hidden="true"
       >
         <path d="M12 20h9"></path>
-        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+        <path
+          d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"
+        ></path>
       </svg>
     `;
   }
@@ -846,8 +1336,8 @@
   function trashIcon() {
     return `
       <svg
-        width="14"
-        height="14"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -860,4 +1350,94 @@
       </svg>
     `;
   }
+
+  /* ==========================================================================
+     Startup
+     ========================================================================== */
+
+  async function initialiseApplication() {
+    const loginForm =
+      getElement('login-form');
+
+    const logoutButton =
+      getElement('logout-btn');
+
+    const passwordForm =
+      getElement('pass-form');
+
+    if (loginForm) {
+      loginForm.addEventListener(
+        'submit',
+        handleLogin
+      );
+    }
+
+    if (logoutButton) {
+      logoutButton.addEventListener(
+        'click',
+        handleLogout
+      );
+    }
+
+    if (passwordForm) {
+      passwordForm.addEventListener(
+        'submit',
+        handlePasswordChange
+      );
+    }
+
+    if (!getSupabaseClient()) {
+      showLogin();
+
+      setMessage(
+        getElement('login-error'),
+        'Supabase failed to load. Check supabase-config.js and the script paths.'
+      );
+
+      return;
+    }
+
+    try {
+      const user =
+        await requireAdministrator();
+
+      if (user) {
+        showDashboard(user);
+      } else {
+        showLogin();
+      }
+    } catch (error) {
+      console.error(
+        'Administrator session check failed:',
+        error
+      );
+
+      showLogin();
+
+      setMessage(
+        getElement('login-error'),
+        error?.message ||
+          'The administrator session could not be verified.'
+      );
+    }
+
+    /*
+     * Keep this callback synchronous.
+     * Do not await Supabase calls inside onAuthStateChange.
+     */
+    getSupabaseClient().auth.onAuthStateChange(
+      event => {
+        if (
+          event === 'SIGNED_OUT'
+        ) {
+          showLogin();
+        }
+      }
+    );
+  }
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    initialiseApplication
+  );
 })();
