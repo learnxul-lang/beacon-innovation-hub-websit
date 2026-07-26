@@ -2,101 +2,498 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — Beacon Innovation Hub</title>
-  <meta name="description" content="Beacon Innovation Hub content administration.">
-  <meta name="robots" content="noindex,nofollow">
-  <link rel="icon" type="image/webp" href="beacon-mark.webp">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-<a class="skip-link" href="#main-content">Skip to content</a>
-<nav class="site-nav" aria-label="Primary navigation">
-  <div class="wrap nav-inner">
-    <a class="brand" href="index.html" aria-label="Beacon Innovation Hub home">
-      <img src="beacon-mark.webp" alt="">
-      <span>Beacon Innovation Hub</span>
-    </a>
-    <button class="nav-burger" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
-    <ul class="nav-links">
-      <li><a href="index.html" data-page="index.html">Home</a></li>
-      <li><a href="updates.html" data-page="updates.html">Updates</a></li>
-      <li><a href="events.html" data-page="events.html">Events</a></li>
-      <li><a href="articles.html" data-page="articles.html">Articles &amp; Reviews</a></li>
-      <li><a href="gallery.html" data-page="gallery.html">Gallery</a></li>
-      
-    </ul>
-  </div>
-</nav>
-<main id="main-content" class="admin-shell">
-  <div class="wrap">
-    <section id="login-box" class="login-wrap" style="padding:0">
-      <div class="login-card">
-        <img class="login-logo" src="beacon-mark.webp" alt="Beacon Innovation Hub mark">
-        <div class="eyebrow">Administrator access</div>
-        <h2 style="margin-top:12px">Manage official content</h2>
-        <p>Publish and update announcements, events, articles, summit reviews and gallery photographs.</p>
-        <form id="login-form">
-          <div class="field" style="text-align:left"><label for="login-email">Administrator email</label><input id="login-email" type="email" required autocomplete="username" placeholder="admin@example.org"></div>
-          <div class="field" style="text-align:left"><label for="login-pass">Password</label><input id="login-pass" type="password" required autocomplete="current-password"></div>
-          <button class="btn btn-primary btn-block" type="submit" style="margin-top:18px">Sign in</button>
-          <div class="error-msg" id="login-error" aria-live="polite"></div>
-        </form>
-        <div class="admin-note"><strong>Private administration area.</strong> Use the administrator email and password created in Supabase Authentication.</div>
-      </div>
-    </section>
 
-    <section id="dashboard" style="padding:0" hidden>
-      <div class="admin-topbar">
-        <div><div class="eyebrow">Content dashboard</div><h2 style="margin-top:8px">Official website administration</h2></div>
-        <div style="display:flex;align-items:center;gap:12px"><span class="session-pill">Signed in</span><button class="btn btn-secondary btn-sm" id="logout-btn" type="button">Sign out</button></div>
-      </div>
-      <div class="admin-tabs" role="tablist" aria-label="Content types">
-        <button class="admin-tab" data-type="update" type="button">Updates</button>
-        <button class="admin-tab" data-type="event" type="button">Events</button>
-        <button class="admin-tab" data-type="article" type="button">Articles &amp; Reviews</button>
-        <button class="admin-tab" data-type="media" type="button">Gallery</button>
-        <button class="admin-tab" data-type="settings" type="button">Settings</button>
-      </div>
-      <div class="admin-layout" id="content-panel"><div class="admin-form" id="form-wrap"></div><div id="table-wrap"></div></div>
-      <div id="settings-panel" hidden>
-        <div class="grid grid-2">
-          <div class="admin-panel">
-            <h3>Change administrator password</h3><p class="hint">Your password is securely managed by Supabase Authentication.</p>
-            <form id="pass-form">
-              
-              <div class="field"><label for="pass-new">New password</label><input id="pass-new" type="password" required minlength="8"></div>
-              <button class="btn btn-primary" type="submit" style="margin-top:18px">Update password</button>
-              <div class="error-msg" id="pass-msg" aria-live="polite"></div>
-            </form>
-          </div>
-          <div class="admin-panel">
-            <h3>Content management</h3><p style="margin:9px 0 18px">Create, edit and remove official content using the tabs above. Database records and uploaded images are stored in Supabase.</p>
-          </div>
-        </div>
-        <div class="admin-note" style="margin-top:20px"><strong>Security:</strong> sign out after publishing, use a unique password, and never share the administrator URL or credentials publicly.</div>
-      </div>
-    </section>
-  </div>
-</main>
-<footer>
-  <div class="wrap">
-    <div class="footer-grid">
-      <div>
-        <a class="brand footer-brand" href="index.html"><img src="beacon-mark.webp" alt=""><span>Beacon Innovation Hub</span></a>
-        <p style="margin-top:14px;max-width:360px">The official platform for verified hub updates, upcoming events, software engineering articles, summit reviews and visual highlights.</p>
-      </div>
-      <div><h4>Explore</h4><ul><li><a href="updates.html">Official updates</a></li><li><a href="events.html">Upcoming events</a></li><li><a href="articles.html">Articles &amp; reviews</a></li></ul></div>
-      <div><h4>Media</h4><ul><li><a href="gallery.html">Photo gallery</a></li><li><a href="articles.html">Video posts</a></li></ul></div>
-      <div><h4>Purpose</h4><ul><li><a href="index.html#about">About the platform</a></li><li><a href="index.html#latest">Latest publications</a></li></ul></div>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Admin — Beacon Innovation Hub</title>
+
+  <meta
+    name="description"
+    content="Beacon Innovation Hub content administration."
+  >
+
+  <meta
+    name="robots"
+    content="noindex,nofollow"
+  >
+
+  <link
+    rel="icon"
+    type="image/webp"
+    href="beacon-mark.webp"
+  >
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+</head>
+
+<body>
+
+  <a
+    class="skip-link"
+    href="#main-content"
+  >
+    Skip to content
+  </a>
+
+  <nav
+    class="site-nav"
+    aria-label="Primary navigation"
+  >
+    <div class="wrap nav-inner">
+
+      <a
+        class="brand"
+        href="index.html"
+        aria-label="Beacon Innovation Hub home"
+      >
+        <img
+          src="beacon-mark.webp"
+          alt=""
+        >
+
+        <span>
+          Beacon Innovation Hub
+        </span>
+      </a>
+
+      <button
+        class="nav-burger"
+        type="button"
+        aria-label="Open navigation"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+
+      <ul class="nav-links">
+        <li>
+          <a
+            href="index.html"
+            data-page="index.html"
+          >
+            Home
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="updates.html"
+            data-page="updates.html"
+          >
+            Updates
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="events.html"
+            data-page="events.html"
+          >
+            Events
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="articles.html"
+            data-page="articles.html"
+          >
+            Articles &amp; Reviews
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="gallery.html"
+            data-page="gallery.html"
+          >
+            Gallery
+          </a>
+        </li>
+      </ul>
     </div>
-    <div class="footer-bottom"><span>© <span data-year>2026</span> Beacon Innovation Hub</span><span>Where ideas transform the future</span></div>
-  </div>
-</footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase-config.js"></script>
-<script src="js/store.js"></script>
-<script src="js/main.js"></script>
-<script src="js/admin.js"></script>
+  </nav>
+
+  <main
+    id="main-content"
+    class="admin-shell"
+  >
+    <div class="wrap">
+
+      <!-- Administrator login -->
+      <section
+        id="login-box"
+        class="login-wrap"
+        style="padding:0"
+      >
+        <div class="login-card">
+
+          <img
+            class="login-logo"
+            src="beacon-mark.webp"
+            alt="Beacon Innovation Hub mark"
+          >
+
+          <div class="eyebrow">
+            Administrator access
+          </div>
+
+          <h2 style="margin-top:12px">
+            Manage official content
+          </h2>
+
+          <p>
+            Publish and update announcements, events,
+            articles, summit reviews and gallery photographs.
+          </p>
+
+          <form id="login-form">
+
+            <div
+              class="field"
+              style="text-align:left"
+            >
+              <label for="login-pass">
+                Administrator password
+              </label>
+
+              <input
+                id="login-pass"
+                type="password"
+                required
+                minlength="8"
+                autocomplete="current-password"
+                placeholder="Enter administrator password"
+              >
+            </div>
+
+            <button
+              class="btn btn-primary btn-block"
+              type="submit"
+              style="margin-top:18px"
+            >
+              Sign in
+            </button>
+
+            <div
+              class="error-msg"
+              id="login-error"
+              aria-live="polite"
+            ></div>
+
+          </form>
+
+          <div class="admin-note">
+            <strong>
+              Private administration area.
+            </strong>
+
+            Enter the administrator password to continue.
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Administrator dashboard -->
+      <section
+        id="dashboard"
+        style="padding:0"
+        hidden
+      >
+
+        <div class="admin-topbar">
+
+          <div>
+            <div class="eyebrow">
+              Content dashboard
+            </div>
+
+            <h2 style="margin-top:8px">
+              Official website administration
+            </h2>
+          </div>
+
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              gap:12px;
+            "
+          >
+            <span class="session-pill">
+              Signed in
+            </span>
+
+            <button
+              class="btn btn-secondary btn-sm"
+              id="logout-btn"
+              type="button"
+            >
+              Sign out
+            </button>
+          </div>
+
+        </div>
+
+        <div
+          class="admin-tabs"
+          role="tablist"
+          aria-label="Content types"
+        >
+
+          <button
+            class="admin-tab"
+            data-type="update"
+            type="button"
+          >
+            Updates
+          </button>
+
+          <button
+            class="admin-tab"
+            data-type="event"
+            type="button"
+          >
+            Events
+          </button>
+
+          <button
+            class="admin-tab"
+            data-type="article"
+            type="button"
+          >
+            Articles &amp; Reviews
+          </button>
+
+          <button
+            class="admin-tab"
+            data-type="media"
+            type="button"
+          >
+            Gallery
+          </button>
+
+          <button
+            class="admin-tab"
+            data-type="settings"
+            type="button"
+          >
+            Settings
+          </button>
+
+        </div>
+
+        <div
+          class="admin-layout"
+          id="content-panel"
+        >
+          <div
+            class="admin-form"
+            id="form-wrap"
+          ></div>
+
+          <div id="table-wrap"></div>
+        </div>
+
+        <div
+          id="settings-panel"
+          hidden
+        >
+
+          <div class="grid grid-2">
+
+            <div class="admin-panel">
+
+              <h3>
+                Administrator password
+              </h3>
+
+              <p class="hint">
+                The administrator password is currently
+                configured inside
+                <code>js/admin.js</code>.
+              </p>
+
+              <div class="admin-note">
+                To change the password, update the
+                <code>ADMIN_PASSWORD</code>
+                value inside
+                <code>js/admin.js</code>,
+                then commit and redeploy the website.
+              </div>
+
+            </div>
+
+            <div class="admin-panel">
+
+              <h3>
+                Content management
+              </h3>
+
+              <p style="margin:9px 0 18px">
+                Create, edit and remove official content
+                using the tabs above.
+              </p>
+
+              <p class="hint">
+                The current content system uses your existing
+                <code>STORE</code>
+                functions.
+              </p>
+
+            </div>
+
+          </div>
+
+          <div
+            class="admin-note"
+            style="margin-top:20px"
+          >
+            <strong>
+              Security:
+            </strong>
+
+            Sign out after publishing and do not share
+            the administrator password publicly.
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+
+      <div class="footer-grid">
+
+        <div>
+
+          <a
+            class="brand footer-brand"
+            href="index.html"
+          >
+            <img
+              src="beacon-mark.webp"
+              alt=""
+            >
+
+            <span>
+              Beacon Innovation Hub
+            </span>
+          </a>
+
+          <p
+            style="
+              margin-top:14px;
+              max-width:360px;
+            "
+          >
+            The official platform for verified hub updates,
+            upcoming events, software engineering articles,
+            summit reviews and visual highlights.
+          </p>
+
+        </div>
+
+        <div>
+          <h4>
+            Explore
+          </h4>
+
+          <ul>
+            <li>
+              <a href="updates.html">
+                Official updates
+              </a>
+            </li>
+
+            <li>
+              <a href="events.html">
+                Upcoming events
+              </a>
+            </li>
+
+            <li>
+              <a href="articles.html">
+                Articles &amp; reviews
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>
+            Media
+          </h4>
+
+          <ul>
+            <li>
+              <a href="gallery.html">
+                Photo gallery
+              </a>
+            </li>
+
+            <li>
+              <a href="articles.html">
+                Video posts
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>
+            Purpose
+          </h4>
+
+          <ul>
+            <li>
+              <a href="index.html#about">
+                About the platform
+              </a>
+            </li>
+
+            <li>
+              <a href="index.html#latest">
+                Latest publications
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+
+        <span>
+          ©
+          <span data-year>
+            2026
+          </span>
+          Beacon Innovation Hub
+        </span>
+
+        <span>
+          Where ideas transform the future
+        </span>
+
+      </div>
+
+    </div>
+  </footer>
+
+  <script src="js/store.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
+
 </body>
 </html>
