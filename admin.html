@@ -41,6 +41,10 @@
     Skip to content
   </a>
 
+  <!-- =========================================================
+       Navigation
+       ========================================================= -->
+
   <nav
     class="site-nav"
     aria-label="Primary navigation"
@@ -72,6 +76,7 @@
       </button>
 
       <ul class="nav-links">
+
         <li>
           <a
             href="index.html"
@@ -116,9 +121,15 @@
             Gallery
           </a>
         </li>
+
       </ul>
+
     </div>
   </nav>
+
+  <!-- =========================================================
+       Administrator area
+       ========================================================= -->
 
   <main
     id="main-content"
@@ -126,7 +137,10 @@
   >
     <div class="wrap">
 
-      <!-- Administrator login -->
+      <!-- =====================================================
+           Email and password login
+           ===================================================== -->
+
       <section
         id="login-box"
         class="login-wrap"
@@ -159,17 +173,39 @@
               class="field"
               style="text-align:left"
             >
+              <label for="login-email">
+                Administrator email
+              </label>
+
+              <input
+                id="login-email"
+                name="email"
+                type="email"
+                required
+                autocomplete="username"
+                inputmode="email"
+                spellcheck="false"
+                placeholder="philanimaraps@gmail.com"
+                value="philanimaraps@gmail.com"
+              >
+            </div>
+
+            <div
+              class="field"
+              style="text-align:left; margin-top:16px"
+            >
               <label for="login-pass">
                 Administrator password
               </label>
 
               <input
                 id="login-pass"
+                name="password"
                 type="password"
                 required
                 minlength="8"
                 autocomplete="current-password"
-                placeholder="Enter administrator password"
+                placeholder="Enter your Supabase password"
               >
             </div>
 
@@ -178,13 +214,14 @@
               type="submit"
               style="margin-top:18px"
             >
-              Sign in
+              Sign in with email
             </button>
 
             <div
               class="error-msg"
               id="login-error"
               aria-live="polite"
+              role="alert"
             ></div>
 
           </form>
@@ -194,13 +231,17 @@
               Private administration area.
             </strong>
 
-            Enter the administrator password to continue.
+            Sign in using your authorised administrator email
+            and Supabase password.
           </div>
 
         </div>
       </section>
 
-      <!-- Administrator dashboard -->
+      <!-- =====================================================
+           Administrator dashboard
+           ===================================================== -->
+
       <section
         id="dashboard"
         style="padding:0"
@@ -224,6 +265,7 @@
               display:flex;
               align-items:center;
               gap:12px;
+              flex-wrap:wrap;
             "
           >
             <span class="session-pill">
@@ -241,6 +283,8 @@
 
         </div>
 
+        <!-- Dashboard tabs -->
+
         <div
           class="admin-tabs"
           role="tablist"
@@ -251,6 +295,7 @@
             class="admin-tab"
             data-type="update"
             type="button"
+            role="tab"
           >
             Updates
           </button>
@@ -259,6 +304,7 @@
             class="admin-tab"
             data-type="event"
             type="button"
+            role="tab"
           >
             Events
           </button>
@@ -267,6 +313,7 @@
             class="admin-tab"
             data-type="article"
             type="button"
+            role="tab"
           >
             Articles &amp; Reviews
           </button>
@@ -275,6 +322,7 @@
             class="admin-tab"
             data-type="media"
             type="button"
+            role="tab"
           >
             Gallery
           </button>
@@ -283,11 +331,14 @@
             class="admin-tab"
             data-type="settings"
             type="button"
+            role="tab"
           >
             Settings
           </button>
 
         </div>
+
+        <!-- Publishing and content listing area -->
 
         <div
           class="admin-layout"
@@ -301,6 +352,10 @@
           <div id="table-wrap"></div>
         </div>
 
+        <!-- ===================================================
+             Settings
+             =================================================== -->
+
         <div
           id="settings-panel"
           hidden
@@ -308,27 +363,79 @@
 
           <div class="grid grid-2">
 
+            <!-- Administrator account -->
+
             <div class="admin-panel">
 
               <h3>
-                Administrator password
+                Administrator account
               </h3>
 
               <p class="hint">
-                The administrator password is currently
-                configured inside
-                <code>js/admin.js</code>.
+                Administrator access is managed securely through
+                Supabase Authentication.
               </p>
 
               <div class="admin-note">
-                To change the password, update the
-                <code>ADMIN_PASSWORD</code>
-                value inside
-                <code>js/admin.js</code>,
-                then commit and redeploy the website.
+                Authorised email:
+                <strong>
+                  philanimaraps@gmail.com
+                </strong>
               </div>
 
             </div>
+
+            <!-- Password change -->
+
+            <div class="admin-panel">
+
+              <h3>
+                Change password
+              </h3>
+
+              <p class="hint">
+                Enter a new password for your Supabase administrator
+                account.
+              </p>
+
+              <form id="pass-form">
+
+                <div class="field">
+                  <label for="pass-new">
+                    New administrator password
+                  </label>
+
+                  <input
+                    id="pass-new"
+                    name="new-password"
+                    type="password"
+                    required
+                    minlength="8"
+                    autocomplete="new-password"
+                    placeholder="Enter at least 8 characters"
+                  >
+                </div>
+
+                <button
+                  class="btn btn-primary"
+                  type="submit"
+                  style="margin-top:16px"
+                >
+                  Update password
+                </button>
+
+                <div
+                  class="error-msg"
+                  id="pass-msg"
+                  aria-live="polite"
+                  style="margin-top:12px"
+                ></div>
+
+              </form>
+
+            </div>
+
+            <!-- Content management information -->
 
             <div class="admin-panel">
 
@@ -337,14 +444,42 @@
               </h3>
 
               <p style="margin:9px 0 18px">
-                Create, edit and remove official content
-                using the tabs above.
+                Create, edit and remove official website content
+                using the dashboard tabs.
               </p>
 
               <p class="hint">
-                The current content system uses your existing
-                <code>STORE</code>
-                functions.
+                Publications are stored in the Supabase
+                <code>posts</code> table.
+              </p>
+
+              <p class="hint">
+                Uploaded images are stored in the
+                <code>post-images</code> storage bucket.
+              </p>
+
+            </div>
+
+            <!-- Publishing guidance -->
+
+            <div class="admin-panel">
+
+              <h3>
+                Publishing guidance
+              </h3>
+
+              <p class="hint">
+                Complete all required fields before selecting the
+                publication button.
+              </p>
+
+              <p class="hint">
+                Gallery posts require an image. Updates, events and
+                articles may use an optional image.
+              </p>
+
+              <p class="hint">
+                Keep images below 3.5 MB for reliable uploading.
               </p>
 
             </div>
@@ -359,8 +494,8 @@
               Security:
             </strong>
 
-            Sign out after publishing and do not share
-            the administrator password publicly.
+            Sign out after publishing and do not share your
+            administrator email or password.
           </div>
 
         </div>
@@ -369,6 +504,10 @@
 
     </div>
   </main>
+
+  <!-- =========================================================
+       Footer
+       ========================================================= -->
 
   <footer>
     <div class="wrap">
@@ -405,11 +544,13 @@
         </div>
 
         <div>
+
           <h4>
             Explore
           </h4>
 
           <ul>
+
             <li>
               <a href="updates.html">
                 Official updates
@@ -427,15 +568,19 @@
                 Articles &amp; reviews
               </a>
             </li>
+
           </ul>
+
         </div>
 
         <div>
+
           <h4>
             Media
           </h4>
 
           <ul>
+
             <li>
               <a href="gallery.html">
                 Photo gallery
@@ -447,15 +592,19 @@
                 Video posts
               </a>
             </li>
+
           </ul>
+
         </div>
 
         <div>
+
           <h4>
             Purpose
           </h4>
 
           <ul>
+
             <li>
               <a href="index.html#about">
                 About the platform
@@ -467,7 +616,9 @@
                 Latest publications
               </a>
             </li>
+
           </ul>
+
         </div>
 
       </div>
@@ -491,11 +642,18 @@
     </div>
   </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
-<script src="store.js"></script>
-<script src="main.js"></script>
-<script src="admin.js"></script>
+  <!-- =========================================================
+       Scripts
+
+       All files are in the main project directory.
+       Supabase must load before store.js and admin.js.
+       ========================================================= -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="store.js"></script>
+  <script src="main.js"></script>
+  <script src="admin.js"></script>
 
 </body>
 </html>
