@@ -17,7 +17,7 @@ let pendingImage = '';
 let dashboardInitialised = false;
 
 /* ==========================================================================
-   Utility functions
+   General utilities
    ========================================================================== */
 
 function showToast(message) {
@@ -43,26 +43,38 @@ function getStorageType(type) {
   return type === 'media' ? 'photo' : type;
 }
 
+function getInterfaceType(type) {
+  return type === 'photo' ? 'media' : type;
+}
+
 function showLogin() {
   const loginBox = document.getElementById('login-box');
   const dashboard = document.getElementById('dashboard');
 
-  loginBox.hidden = false;
-  loginBox.style.display = 'block';
+  if (loginBox) {
+    loginBox.hidden = false;
+    loginBox.style.display = 'block';
+  }
 
-  dashboard.hidden = true;
-  dashboard.style.display = 'none';
+  if (dashboard) {
+    dashboard.hidden = true;
+    dashboard.style.display = 'none';
+  }
 }
 
 function showDashboard() {
   const loginBox = document.getElementById('login-box');
   const dashboard = document.getElementById('dashboard');
 
-  loginBox.hidden = true;
-  loginBox.style.display = 'none';
+  if (loginBox) {
+    loginBox.hidden = true;
+    loginBox.style.display = 'none';
+  }
 
-  dashboard.hidden = false;
-  dashboard.style.display = 'block';
+  if (dashboard) {
+    dashboard.hidden = false;
+    dashboard.style.display = 'block';
+  }
 
   if (!dashboardInitialised) {
     initDashboard();
@@ -94,18 +106,23 @@ async function verifyAdminAccess() {
 
   try {
     const {
-      data: { user },
-      error: userError
-    } = await supabaseClient.auth.getUser();
+      data: { session },
+      error: sessionError
+    } = await supabaseClient.auth.getSession();
 
-    if (userError) {
-      console.error('Could not retrieve user:', userError);
-      loginError.textContent = userError.message;
+    if (sessionError) {
+      console.error('Session error:', sessionError);
+
+      if (loginError) {
+        loginError.textContent =
+          `Session error: ${sessionError.message}`;
+      }
+
       showLogin();
       return false;
     }
 
-    if (!user) {
+    if (!session?.user) {
       showLogin();
       return false;
     }
@@ -121,16 +138,20 @@ async function verifyAdminAccess() {
         adminError
       );
 
-      loginError.textContent =
-        `Could not verify administrator access: ${adminError.message}`;
+      if (loginError) {
+        loginError.textContent =
+          `Administrator verification failed: ${adminError.message}`;
+      }
 
       showLogin();
       return false;
     }
 
     if (isAdmin !== true) {
-      loginError.textContent =
-        'This account is authenticated but is not registered as an administrator.';
+      if (loginError) {
+        loginError.textContent =
+          'This account is signed in but is not registered as an administrator.';
+      }
 
       await supabaseClient.auth.signOut();
       showLogin();
@@ -138,15 +159,22 @@ async function verifyAdminAccess() {
       return false;
     }
 
-    loginError.textContent = '';
-    showDashboard();
+    if (loginError) {
+      loginError.textContent = '';
+    }
 
+    showDashboard();
     return true;
   } catch (error) {
-    console.error('Unexpected administrator error:', error);
+    console.error(
+      'Unexpected administrator verification error:',
+      error
+    );
 
-    loginError.textContent =
-      'An unexpected error occurred while verifying administrator access.';
+    if (loginError) {
+      loginError.textContent =
+        'Administrator access could not be verified.';
+    }
 
     showLogin();
     return false;
@@ -185,23 +213,33 @@ async function handleLogin(event) {
     if (error) {
       console.error('Supabase login error:', error);
 
-      loginError.textContent =
+      if (
+        error.code === 'invalid_credentials' ||
         error.message === 'Invalid login credentials'
-          ? 'Incorrect administrator email or password.'
-          : error.message;
+      ) {
+        loginError.textContent =
+          'Incorrect administrator email or password.';
+      } else if (
+        error.code === 'email_not_confirmed'
+      ) {
+        loginError.textContent =
+          'This email address has not been confirmed in Supabase.';
+      } else {
+        loginError.textContent = error.message;
+      }
 
       return;
     }
 
-    if (!data.user || !data.session) {
+    if (!data?.session || !data?.user) {
       loginError.textContent =
-        'Supabase did not create a valid login session.';
+        'Login succeeded, but Supabase did not create a session.';
       return;
     }
 
-    const allowed = await verifyAdminAccess();
+    const hasAccess = await verifyAdminAccess();
 
-    if (allowed) {
+    if (hasAccess) {
       passwordInput.value = '';
       showToast('Administrator login successful');
     }
@@ -209,7 +247,7 @@ async function handleLogin(event) {
     console.error('Unexpected login error:', error);
 
     loginError.textContent =
-      'Unable to sign in. Check your connection and try again.';
+      'Unable to sign in. Check the browser console for details.';
   } finally {
     setLoginLoading(false);
   }
@@ -218,11 +256,14 @@ async function handleLogin(event) {
 async function handleLogout() {
   const logoutButton = document.getElementById('logout-btn');
 
-  logoutButton.disabled = true;
-  logoutButton.textContent = 'Signing out...';
+  if (logoutButton) {
+    logoutButton.disabled = true;
+    logoutButton.textContent = 'Signing out...';
+  }
 
   try {
-    const { error } = await supabaseClient.auth.signOut();
+    const { error } =
+      await supabaseClient.auth.signOut();
 
     if (error) {
       console.error('Logout error:', error);
@@ -237,8 +278,10 @@ async function handleLogout() {
     console.error('Unexpected logout error:', error);
     showToast('Unable to sign out');
   } finally {
-    logoutButton.disabled = false;
-    logoutButton.textContent = 'Sign out';
+    if (logoutButton) {
+      logoutButton.disabled = false;
+      logoutButton.textContent = 'Sign out';
+    }
   }
 }
 
@@ -247,55 +290,70 @@ async function handleLogout() {
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const loginError = document.getElementById('login-error');
+  const loginForm = document.getElementById('login-form');
+  const logoutButton = document.getElementById('logout-btn');
+
   if (!supabaseClient) {
     console.error(
-      'Supabase client was not found. Check supabase-config.js.'
+      'window.supabaseClient is undefined. Check supabase-config.js.'
     );
 
-    const loginError = document.getElementById('login-error');
-
-    loginError.textContent =
-      'The website could not connect to Supabase.';
+    if (loginError) {
+      loginError.textContent =
+        'The website could not connect to Supabase.';
+    }
 
     showLogin();
     return;
   }
 
+  console.log('Supabase client loaded successfully.');
+
   if (typeof initThemeControls === 'function') {
     initThemeControls();
   }
 
-  const loginForm = document.getElementById('login-form');
-  const logoutButton = document.getElementById('logout-btn');
+  if (loginForm) {
+    loginForm.addEventListener(
+      'submit',
+      handleLogin
+    );
+  }
 
-  loginForm.addEventListener('submit', handleLogin);
-  logoutButton.addEventListener('click', handleLogout);
+  if (logoutButton) {
+    logoutButton.addEventListener(
+      'click',
+      handleLogout
+    );
+  }
 
   showLogin();
 
+  /*
+   * Check whether a valid administrator session already
+   * exists in the browser.
+   */
   await verifyAdminAccess();
 
+  /*
+   * Do not make awaited Supabase requests directly inside
+   * this callback.
+   */
   supabaseClient.auth.onAuthStateChange(
-    async (event, session) => {
+    (event, session) => {
+      console.log('Supabase authentication event:', event);
+
       if (event === 'SIGNED_OUT' || !session) {
         dashboardInitialised = false;
         showLogin();
-        return;
-      }
-
-      if (
-        event === 'SIGNED_IN' ||
-        event === 'TOKEN_REFRESHED' ||
-        event === 'INITIAL_SESSION'
-      ) {
-        await verifyAdminAccess();
       }
     }
   );
 });
 
 /* ==========================================================================
-   Dashboard setup
+   Dashboard initialisation
    ========================================================================== */
 
 function initDashboard() {
@@ -311,7 +369,8 @@ function initDashboard() {
     tab.dataset.initialised = 'true';
   });
 
-  const passwordForm = document.getElementById('pass-form');
+  const passwordForm =
+    document.getElementById('pass-form');
 
   if (
     passwordForm &&
@@ -327,6 +386,10 @@ function initDashboard() {
 
   switchTab('update');
 }
+
+/* ==========================================================================
+   Dashboard tabs
+   ========================================================================== */
 
 function switchTab(type) {
   currentTab = type;
@@ -346,13 +409,17 @@ function switchTab(type) {
   const contentPanel =
     document.getElementById('content-panel');
 
-  settingsPanel.hidden = type !== 'settings';
-  settingsPanel.style.display =
-    type === 'settings' ? 'block' : 'none';
+  if (settingsPanel) {
+    settingsPanel.hidden = type !== 'settings';
+    settingsPanel.style.display =
+      type === 'settings' ? 'block' : 'none';
+  }
 
-  contentPanel.hidden = type === 'settings';
-  contentPanel.style.display =
-    type === 'settings' ? 'none' : 'grid';
+  if (contentPanel) {
+    contentPanel.hidden = type === 'settings';
+    contentPanel.style.display =
+      type === 'settings' ? 'none' : 'grid';
+  }
 
   if (type !== 'settings') {
     renderForm(type);
@@ -361,7 +428,7 @@ function switchTab(type) {
 }
 
 /* ==========================================================================
-   Content form
+   Form fields
    ========================================================================== */
 
 function fieldsFor(type) {
@@ -370,6 +437,7 @@ function fieldsFor(type) {
   const common = `
     <div class="field">
       <label for="f-title">Title</label>
+
       <input
         id="f-title"
         required
@@ -407,7 +475,9 @@ function fieldsFor(type) {
 
   const tags = `
     <div class="field">
-      <label for="f-tags">Tags (comma separated)</label>
+      <label for="f-tags">
+        Tags (comma separated)
+      </label>
 
       <input
         id="f-tags"
@@ -437,7 +507,7 @@ function fieldsFor(type) {
     </div>
   `;
 
-  const eventExtra = `
+  const eventFields = `
     <div class="field">
       <label for="f-eventdate">
         Event date and time
@@ -465,14 +535,28 @@ function fieldsFor(type) {
   }
 
   if (type === 'event') {
-    return common + eventExtra + content + tags + image;
+    return (
+      common +
+      eventFields +
+      content +
+      tags +
+      image
+    );
   }
 
   return common + content + tags + image;
 }
 
+/* ==========================================================================
+   Form rendering
+   ========================================================================== */
+
 function renderForm(type) {
   const formWrap = document.getElementById('form-wrap');
+
+  if (!formWrap) {
+    return;
+  }
 
   formWrap.innerHTML = `
     <h3 id="form-title">
@@ -507,7 +591,8 @@ function renderForm(type) {
     </form>
   `;
 
-  const imageInput = document.getElementById('f-image');
+  const imageInput =
+    document.getElementById('f-image');
 
   if (imageInput) {
     imageInput.addEventListener('change', () => {
@@ -525,7 +610,7 @@ function renderForm(type) {
 
       if (file.size > 3.5 * 1024 * 1024) {
         showToast(
-          'Image too large — use an image under 3.5 MB'
+          'Image too large. Use an image under 3.5 MB.'
         );
 
         imageInput.value = '';
@@ -537,11 +622,17 @@ function renderForm(type) {
       reader.onload = () => {
         pendingImage = reader.result;
 
-        document.getElementById(
-          'f-image-preview'
-        ).innerHTML = `
-          <img src="${pendingImage}" alt="Selected image preview">
-        `;
+        const preview =
+          document.getElementById('f-image-preview');
+
+        if (preview) {
+          preview.innerHTML = `
+            <img
+              src="${pendingImage}"
+              alt="Selected image preview"
+            >
+          `;
+        }
       };
 
       reader.onerror = () => {
@@ -552,24 +643,30 @@ function renderForm(type) {
     });
   }
 
-  document
-    .getElementById('post-form')
-    .addEventListener('submit', event => {
+  const postForm =
+    document.getElementById('post-form');
+
+  if (postForm) {
+    postForm.addEventListener('submit', event => {
       event.preventDefault();
       savePost(type);
     });
+  }
 }
 
 /* ==========================================================================
-   Save content
+   Save posts
    ========================================================================== */
 
 function savePost(type) {
-  const title =
-    document.getElementById('f-title').value.trim();
+  const titleInput =
+    document.getElementById('f-title');
 
-  const excerpt =
-    document.getElementById('f-excerpt').value.trim();
+  const excerptInput =
+    document.getElementById('f-excerpt');
+
+  const title = titleInput.value.trim();
+  const excerpt = excerptInput.value.trim();
 
   if (!title || !excerpt) {
     showToast('Complete all required fields');
@@ -591,41 +688,49 @@ function savePost(type) {
   post.title = title;
   post.excerpt = excerpt;
 
-  const contentElement =
+  const contentInput =
     document.getElementById('f-content');
 
-  if (contentElement) {
-    post.content = contentElement.value.trim();
+  if (contentInput) {
+    post.content = contentInput.value.trim();
   } else if (type === 'media') {
     post.content = excerpt;
   }
 
-  const tagsElement =
+  const tagsInput =
     document.getElementById('f-tags');
 
-  if (tagsElement) {
-    post.tags = tagsElement.value
+  if (tagsInput) {
+    post.tags = tagsInput.value
       .split(',')
       .map(tag => tag.trim())
       .filter(Boolean);
   }
 
   if (type === 'event') {
-    const eventDate =
-      document.getElementById('f-eventdate').value;
+    const eventDateInput =
+      document.getElementById('f-eventdate');
 
-    post.eventDate = eventDate
-      ? new Date(eventDate).toISOString()
+    const locationInput =
+      document.getElementById('f-location');
+
+    post.eventDate = eventDateInput.value
+      ? new Date(eventDateInput.value).toISOString()
       : '';
 
-    post.location =
-      document.getElementById('f-location').value.trim();
+    post.location = locationInput.value.trim();
   }
 
   if (pendingImage) {
     post.image = pendingImage;
-  } else if (type === 'media' && !post.image) {
-    showToast('Please add an image for the gallery post');
+  } else if (
+    type === 'media' &&
+    !post.image
+  ) {
+    showToast(
+      'Please add an image for the gallery post'
+    );
+
     return;
   }
 
@@ -651,13 +756,17 @@ function savePost(type) {
 }
 
 /* ==========================================================================
-   Content table
+   Render posts
    ========================================================================== */
 
 function renderTable(type) {
   const storageType = getStorageType(type);
   const posts = STORE.byType(storageType);
   const list = document.getElementById('table-wrap');
+
+  if (!list) {
+    return;
+  }
 
   if (!posts.length) {
     list.innerHTML = `
@@ -692,6 +801,7 @@ function renderTable(type) {
 
             <p>
               ${fmtDate(post.date)}
+
               ${
                 post.eventDate
                   ? ` · event: ${fmtDate(post.eventDate)}`
@@ -724,31 +834,35 @@ function renderTable(type) {
     </div>
   `;
 
-  list.querySelectorAll('[data-edit]').forEach(button => {
-    button.addEventListener('click', () => {
-      loadForEdit(button.dataset.edit);
+  list
+    .querySelectorAll('[data-edit]')
+    .forEach(button => {
+      button.addEventListener('click', () => {
+        loadForEdit(button.dataset.edit);
+      });
     });
-  });
 
-  list.querySelectorAll('[data-del]').forEach(button => {
-    button.addEventListener('click', () => {
-      const confirmed = window.confirm(
-        'Delete this post? This cannot be undone.'
-      );
+  list
+    .querySelectorAll('[data-del]')
+    .forEach(button => {
+      button.addEventListener('click', () => {
+        const confirmed = window.confirm(
+          'Delete this post? This cannot be undone.'
+        );
 
-      if (!confirmed) {
-        return;
-      }
+        if (!confirmed) {
+          return;
+        }
 
-      STORE.remove(button.dataset.del);
-      showToast('Post deleted');
-      renderTable(type);
+        STORE.remove(button.dataset.del);
+        showToast('Post deleted');
+        renderTable(type);
+      });
     });
-  });
 }
 
 /* ==========================================================================
-   Edit content
+   Edit posts
    ========================================================================== */
 
 function loadForEdit(id) {
@@ -763,24 +877,33 @@ function loadForEdit(id) {
   pendingImage = '';
 
   const interfaceType =
-    post.type === 'photo' ? 'media' : post.type;
+    getInterfaceType(post.type);
 
   currentTab = interfaceType;
 
   renderForm(interfaceType);
 
-  document.getElementById(
-    'form-title'
-  ).textContent = `Edit ${TYPE_LABEL[interfaceType]}`;
+  const formTitle =
+    document.getElementById('form-title');
 
-  document.getElementById(
-    'submit-btn'
-  ).textContent = 'Save changes';
+  const submitButton =
+    document.getElementById('submit-btn');
 
   const cancelButton =
     document.getElementById('cancel-edit');
 
-  cancelButton.style.display = 'inline-flex';
+  if (formTitle) {
+    formTitle.textContent =
+      `Edit ${TYPE_LABEL[interfaceType]}`;
+  }
+
+  if (submitButton) {
+    submitButton.textContent = 'Save changes';
+  }
+
+  if (cancelButton) {
+    cancelButton.style.display = 'inline-flex';
+  }
 
   document.getElementById('f-title').value =
     post.title || '';
@@ -788,51 +911,71 @@ function loadForEdit(id) {
   document.getElementById('f-excerpt').value =
     post.excerpt || '';
 
-  const contentElement =
+  const contentInput =
     document.getElementById('f-content');
 
-  if (contentElement) {
-    contentElement.value = post.content || '';
+  if (contentInput) {
+    contentInput.value = post.content || '';
   }
 
-  const tagsElement =
+  const tagsInput =
     document.getElementById('f-tags');
 
-  if (tagsElement) {
-    tagsElement.value = (post.tags || []).join(', ');
+  if (tagsInput) {
+    tagsInput.value =
+      (post.tags || []).join(', ');
   }
 
   if (interfaceType === 'event') {
-    document.getElementById('f-eventdate').value =
-      post.eventDate
-        ? toLocalInput(post.eventDate)
-        : '';
+    const eventDateInput =
+      document.getElementById('f-eventdate');
 
-    document.getElementById('f-location').value =
-      post.location || '';
+    const locationInput =
+      document.getElementById('f-location');
+
+    eventDateInput.value = post.eventDate
+      ? toLocalInput(post.eventDate)
+      : '';
+
+    locationInput.value = post.location || '';
   }
 
   if (post.image) {
-    document.getElementById(
-      'f-image-preview'
-    ).innerHTML = `
-      <img src="${post.image}" alt="Current post image">
-    `;
+    const preview =
+      document.getElementById('f-image-preview');
+
+    if (preview) {
+      preview.innerHTML = `
+        <img
+          src="${post.image}"
+          alt="Current post image"
+        >
+      `;
+    }
   }
 
-  cancelButton.addEventListener('click', () => {
-    switchTab(interfaceType);
-  });
+  if (cancelButton) {
+    cancelButton.addEventListener('click', () => {
+      switchTab(interfaceType);
+    });
+  }
 
-  document.getElementById('form-wrap').scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  });
+  const formWrap =
+    document.getElementById('form-wrap');
+
+  if (formWrap) {
+    formWrap.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
 }
 
 function toLocalInput(isoDate) {
   const date = new Date(isoDate);
-  const pad = number => String(number).padStart(2, '0');
+
+  const pad = number =>
+    String(number).padStart(2, '0');
 
   return (
     `${date.getFullYear()}-` +
@@ -844,7 +987,7 @@ function toLocalInput(isoDate) {
 }
 
 /* ==========================================================================
-   Supabase password change
+   Change administrator password
    ========================================================================== */
 
 async function handlePasswordChange(event) {
@@ -875,7 +1018,10 @@ async function handlePasswordChange(event) {
       });
 
     if (error) {
-      console.error('Password update error:', error);
+      console.error(
+        'Password update error:',
+        error
+      );
 
       message.textContent = error.message;
       message.style.color = 'var(--danger)';
@@ -918,7 +1064,10 @@ function editIcon() {
       aria-hidden="true"
     >
       <path d="M12 20h9"></path>
-      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+
+      <path
+        d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"
+      ></path>
     </svg>
   `;
 }
