@@ -24,11 +24,42 @@
   let dashboardInitialised = false;
 
   /* ==========================================================================
-     DOM helpers
+     Basic helpers
      ========================================================================== */
 
   function getElement(id) {
     return document.getElementById(id);
+  }
+
+  function ensureStore() {
+    if (typeof STORE === 'undefined' || !STORE) {
+      throw new Error(
+        'store.js could not be loaded. Make sure store.js loads before admin.js.'
+      );
+    }
+
+    return STORE;
+  }
+
+  function getClient() {
+    const store = ensureStore();
+
+    if (!store.client) {
+      throw new Error(
+        'The Supabase client is unavailable.'
+      );
+    }
+
+    return store.client;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
   }
 
   function setMessage(element, message, type = 'error') {
@@ -37,22 +68,17 @@
     }
 
     element.textContent = message;
-    element.dataset.type = type;
 
-    if (type === 'success') {
-      element.style.color = '#1b7f46';
-    } else {
-      element.style.color = '#b42318';
-    }
+    element.style.color =
+      type === 'success'
+        ? '#18794e'
+        : '#b42318';
   }
 
   function clearMessage(element) {
-    if (!element) {
-      return;
+    if (element) {
+      element.textContent = '';
     }
-
-    element.textContent = '';
-    element.removeAttribute('data-type');
   }
 
   function showToast(message) {
@@ -73,135 +99,121 @@
 
     toast._timer = window.setTimeout(() => {
       toast.classList.remove('show');
-    }, 2600);
+    }, 2800);
   }
 
-  function escapeHtml(value) {
-    return String(value ?? '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
+  function formatDate(value) {
+    if (!value) {
+      return '';
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    return date.toLocaleDateString('en-ZA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  function toDateTimeLocal(value) {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    const pad = number =>
+      String(number).padStart(2, '0');
+
+    return (
+      `${date.getFullYear()}-` +
+      `${pad(date.getMonth() + 1)}-` +
+      `${pad(date.getDate())}T` +
+      `${pad(date.getHours())}:` +
+      `${pad(date.getMinutes())}`
+    );
   }
 
   /* ==========================================================================
-     Supabase helpers
+     Authentication
      ========================================================================== */
 
-  function getSupabaseClient() {
-    return window.supabaseClient;
-  }
-
-  function ensureSupabaseClient() {
-    const client = getSupabaseClient();
-
-    if (!client) {
-      throw new Error(
-        'Supabase is not configured. Check supabase-config.js and the script order in admin.html.'
-      );
-    }
-
-    return client;
-  }
-
-  async function getCurrentSession() {
-    const client = ensureSupabaseClient();
+  async function getCurrentUser() {
+    const client = getClient();
 
     const {
       data,
       error
-    } = await client.auth.getSession();
+    } = await client.auth.getUser();
 
     if (error) {
-      throw error;
+      return null;
     }
 
-    return data.session;
+    return data.user || null;
   }
 
   async function verifyAdministrator(user) {
-    if (!user) {
+    if (!user?.email) {
       return false;
     }
 
-    const userEmail = String(user.email || '')
+    const email = user.email
       .trim()
       .toLowerCase();
 
-    if (userEmail !== ADMIN_EMAIL.toLowerCase()) {
+    if (email !== ADMIN_EMAIL.toLowerCase()) {
       return false;
     }
 
-    const client = ensureSupabaseClient();
+    const client = getClient();
 
     /*
-     * Preferred check:
-     * Calls the public.is_admin() database function.
+     * First try the is_admin() database function.
      */
     const {
-      data: rpcResult,
+      data: isAdmin,
       error: rpcError
     } = await client.rpc('is_admin');
 
     if (!rpcError) {
-      return rpcResult === true;
+      return isAdmin === true;
     }
 
     console.warn(
-      'The is_admin() RPC check failed. Trying admin_users table.',
+      'is_admin() could not be called. Trying admin_users table.',
       rpcError
     );
 
     /*
-     * Fallback check:
-     * Looks for the authenticated email in admin_users.
+     * Fallback: check the admin_users table directly.
      */
     const {
-      data: adminRecord,
-      error: tableError
+      data,
+      error
     } = await client
       .from('admin_users')
       .select('email, role')
-      .eq('email', userEmail)
+      .eq('email', email)
       .eq('role', 'admin')
       .maybeSingle();
 
-    if (tableError) {
+    if (error) {
       console.error(
-        'The admin_users fallback check failed:',
-        tableError
+        'Administrator verification failed:',
+        error
       );
 
-      throw new Error(
-        'Your account was authenticated, but administrator permission could not be verified.'
-      );
+      return false;
     }
 
-    return Boolean(adminRecord);
+    return Boolean(data);
   }
-
-  async function requireAdministrator() {
-    const session = await getCurrentSession();
-
-    if (!session?.user) {
-      return null;
-    }
-
-    const authorised = await verifyAdministrator(
-      session.user
-    );
-
-    if (!authorised) {
-      return null;
-    }
-
-    return session.user;
-  }
-
-  /* ==========================================================================
-     Login and dashboard visibility
-     ========================================================================== */
 
   function showLogin() {
     const loginBox = getElement('login-box');
@@ -246,14 +258,9 @@
     }
   }
 
-  function setLoginButtonLoading(loading) {
+  function setLoginLoading(loading) {
     const loginForm = getElement('login-form');
-
-    if (!loginForm) {
-      return;
-    }
-
-    const button = loginForm.querySelector(
+    const button = loginForm?.querySelector(
       'button[type="submit"]'
     );
 
@@ -270,26 +277,16 @@
   async function handleLogin(event) {
     event.preventDefault();
 
-    const client = getSupabaseClient();
+    const loginError = getElement('login-error');
     const emailInput = getElement('login-email');
     const passwordInput = getElement('login-pass');
-    const loginError = getElement('login-error');
 
     clearMessage(loginError);
-
-    if (!client) {
-      setMessage(
-        loginError,
-        'Supabase failed to load. Check supabase-config.js.'
-      );
-
-      return;
-    }
 
     if (!emailInput || !passwordInput) {
       setMessage(
         loginError,
-        'The login form is missing the email or password field.'
+        'The administrator login form is incomplete.'
       );
 
       return;
@@ -304,7 +301,7 @@
     if (email !== ADMIN_EMAIL.toLowerCase()) {
       setMessage(
         loginError,
-        'This email address is not registered as the website administrator.'
+        'This email address is not authorised as the website administrator.'
       );
 
       return;
@@ -319,118 +316,143 @@
       return;
     }
 
-    setLoginButtonLoading(true);
+    setLoginLoading(true);
 
     try {
-      const {
-        data,
-        error
-      } = await client.auth.signInWithPassword({
-        email,
-        password
-      });
+      const store = ensureStore();
 
-      if (error) {
-        throw error;
-      }
+      await store.login(email, password);
 
-      if (!data.user) {
+      const user = await getCurrentUser();
+
+      if (!user) {
         throw new Error(
           'Supabase did not return an authenticated user.'
         );
       }
 
-      const authorised = await verifyAdministrator(
-        data.user
-      );
+      const authorised =
+        await verifyAdministrator(user);
 
       if (!authorised) {
-        await client.auth.signOut();
+        await store.logout();
 
         throw new Error(
-          'Login succeeded, but this account does not have administrator permission.'
+          'The account was authenticated but does not have administrator permission.'
         );
       }
 
       passwordInput.value = '';
 
-      showDashboard(data.user);
+      showDashboard(user);
       showToast('Administrator login successful.');
     } catch (error) {
-      console.error('Administrator login failed:', error);
+      console.error(
+        'Administrator login failed:',
+        error
+      );
 
       let message =
         error?.message ||
         'The administrator login failed.';
 
       if (
-        message.toLowerCase().includes(
-          'invalid login credentials'
-        )
+        message
+          .toLowerCase()
+          .includes('invalid login credentials')
       ) {
         message =
           'Incorrect administrator email or password.';
       }
 
       if (
-        message.toLowerCase().includes(
-          'email not confirmed'
-        )
+        message
+          .toLowerCase()
+          .includes('email not confirmed')
       ) {
         message =
-          'Your Supabase email address has not been confirmed.';
+          'Your administrator email has not been confirmed in Supabase.';
       }
 
       setMessage(loginError, message);
     } finally {
-      setLoginButtonLoading(false);
+      setLoginLoading(false);
     }
   }
 
   async function handleLogout() {
-    const client = getSupabaseClient();
-
     try {
-      if (client) {
-        const { error } = await client.auth.signOut();
-
-        if (error) {
-          throw error;
-        }
-      }
+      const store = ensureStore();
+      await store.logout();
     } catch (error) {
-      console.error('Sign-out error:', error);
+      console.error('Logout failed:', error);
     } finally {
       dashboardInitialised = false;
+      editingId = null;
+      pendingImage = '';
+
       showLogin();
       showToast('Signed out successfully.');
     }
   }
 
+  async function restoreAdministratorSession() {
+    try {
+      const store = ensureStore();
+      const authenticated = await store.isAuthed();
+
+      if (!authenticated) {
+        showLogin();
+        return;
+      }
+
+      const user = await getCurrentUser();
+
+      if (!user) {
+        showLogin();
+        return;
+      }
+
+      const authorised =
+        await verifyAdministrator(user);
+
+      if (!authorised) {
+        await store.logout();
+        showLogin();
+        return;
+      }
+
+      showDashboard(user);
+    } catch (error) {
+      console.error(
+        'Session restoration failed:',
+        error
+      );
+
+      showLogin();
+
+      setMessage(
+        getElement('login-error'),
+        error?.message ||
+          'The administrator session could not be restored.'
+      );
+    }
+  }
+
   /* ==========================================================================
-     Password change
+     Password update
      ========================================================================== */
 
   async function handlePasswordChange(event) {
     event.preventDefault();
 
-    const client = getSupabaseClient();
     const passwordInput = getElement('pass-new');
     const messageBox = getElement('pass-msg');
-    const submitButton = event.currentTarget.querySelector(
+    const button = event.currentTarget.querySelector(
       'button[type="submit"]'
     );
 
     clearMessage(messageBox);
-
-    if (!client) {
-      setMessage(
-        messageBox,
-        'Supabase is not configured.'
-      );
-
-      return;
-    }
 
     if (!passwordInput) {
       return;
@@ -441,34 +463,21 @@
     if (newPassword.length < 8) {
       setMessage(
         messageBox,
-        'Your password must contain at least eight characters.'
+        'The new password must contain at least eight characters.'
       );
 
       return;
     }
 
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = 'Updating…';
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Updating…';
     }
 
     try {
-      const {
-        data,
-        error
-      } = await client.auth.updateUser({
-        password: newPassword
-      });
+      const store = ensureStore();
 
-      if (error) {
-        throw error;
-      }
-
-      if (!data.user) {
-        throw new Error(
-          'Supabase did not confirm the password update.'
-        );
-      }
+      await store.changePassword(newPassword);
 
       passwordInput.value = '';
 
@@ -480,7 +489,10 @@
 
       showToast('Password updated successfully.');
     } catch (error) {
-      console.error('Password update failed:', error);
+      console.error(
+        'Password update failed:',
+        error
+      );
 
       setMessage(
         messageBox,
@@ -488,21 +500,24 @@
           'The password could not be updated.'
       );
     } finally {
-      if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Update password';
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Update password';
       }
     }
   }
 
   /* ==========================================================================
-     Dashboard setup
+     Dashboard tabs
      ========================================================================== */
 
   function initialiseDashboard() {
-    document.querySelectorAll('.admin-tab')
+    document
+      .querySelectorAll('.admin-tab')
       .forEach(tab => {
-        if (tab.dataset.listenerAttached === 'true') {
+        if (
+          tab.dataset.listenerAttached === 'true'
+        ) {
           return;
         }
 
@@ -521,7 +536,8 @@
     editingId = null;
     pendingImage = '';
 
-    document.querySelectorAll('.admin-tab')
+    document
+      .querySelectorAll('.admin-tab')
       .forEach(tab => {
         tab.classList.toggle(
           'active',
@@ -529,19 +545,14 @@
         );
       });
 
-    const settingsPanel =
-      getElement('settings-panel');
-
     const contentPanel =
       getElement('content-panel');
 
-    const showingSettings = type === 'settings';
+    const settingsPanel =
+      getElement('settings-panel');
 
-    if (settingsPanel) {
-      settingsPanel.hidden = !showingSettings;
-      settingsPanel.style.display =
-        showingSettings ? 'block' : 'none';
-    }
+    const showingSettings =
+      type === 'settings';
 
     if (contentPanel) {
       contentPanel.hidden = showingSettings;
@@ -549,30 +560,24 @@
         showingSettings ? 'none' : 'grid';
     }
 
+    if (settingsPanel) {
+      settingsPanel.hidden = !showingSettings;
+      settingsPanel.style.display =
+        showingSettings ? 'block' : 'none';
+    }
+
     if (!showingSettings) {
       renderForm(type);
-      renderTable(type);
+      void renderTable(type);
     }
   }
 
   /* ==========================================================================
-     Content form
+     Publishing form
      ========================================================================== */
 
-  function getStoredType(type) {
-    return type === 'media'
-      ? 'photo'
-      : type;
-  }
-
-  function getInterfaceType(type) {
-    return type === 'photo'
-      ? 'media'
-      : type;
-  }
-
   function buildFormFields(type) {
-    const media = type === 'media';
+    const isMedia = type === 'media';
 
     const commonFields = `
       <div class="field">
@@ -589,7 +594,7 @@
 
       <div class="field">
         <label for="f-excerpt">
-          ${media ? 'Caption' : 'Short summary'}
+          ${isMedia ? 'Caption' : 'Short summary'}
         </label>
 
         <textarea
@@ -598,8 +603,8 @@
           maxlength="220"
           style="min-height:80px"
           placeholder="${
-            media
-              ? 'Write a caption for the photograph'
+            isMedia
+              ? 'Write a caption for this photograph'
               : 'Write a short preview summary'
           }"
         ></textarea>
@@ -620,6 +625,21 @@
       </div>
     `;
 
+    const categoryField = `
+      <div class="field">
+        <label for="f-category">
+          Category
+        </label>
+
+        <input
+          id="f-category"
+          type="text"
+          maxlength="80"
+          placeholder="For example: Software Development"
+        >
+      </div>
+    `;
+
     const tagsField = `
       <div class="field">
         <label for="f-tags">
@@ -629,11 +649,11 @@
         <input
           id="f-tags"
           type="text"
-          placeholder="innovation, software, community"
+          placeholder="innovation, technology, community"
         >
 
         <p class="hint">
-          Separate multiple tags with commas.
+          Separate multiple tags using commas.
         </p>
       </div>
     `;
@@ -641,7 +661,7 @@
     const imageField = `
       <div class="field">
         <label for="f-image">
-          Image ${media ? '(required)' : '(optional)'}
+          Image ${isMedia ? '(required)' : '(optional)'}
         </label>
 
         <input
@@ -674,26 +694,98 @@
 
       <div class="field">
         <label for="f-location">
-          Location
+          Event location
         </label>
 
         <input
           id="f-location"
           type="text"
-          placeholder="Enter the event location"
+          placeholder="Enter the event venue"
+        >
+      </div>
+
+      <div class="field">
+        <label for="f-registration">
+          Registration link
+        </label>
+
+        <input
+          id="f-registration"
+          type="url"
+          placeholder="https://example.com/register"
+        >
+      </div>
+    `;
+
+    const relatedLinkFields = `
+      <div class="field">
+        <label for="f-linkurl">
+          Related link
+        </label>
+
+        <input
+          id="f-linkurl"
+          type="url"
+          placeholder="https://example.com"
+        >
+      </div>
+
+      <div class="field">
+        <label for="f-linklabel">
+          Related link label
+        </label>
+
+        <input
+          id="f-linklabel"
+          type="text"
+          maxlength="80"
+          placeholder="For example: Read more"
+        >
+      </div>
+    `;
+
+    const youtubeField = `
+      <div class="field">
+        <label for="f-youtube">
+          YouTube video URL
+        </label>
+
+        <input
+          id="f-youtube"
+          type="url"
+          placeholder="https://youtube.com/watch?v=..."
         >
       </div>
     `;
 
     if (type === 'media') {
-      return commonFields + imageField + tagsField;
+      return (
+        commonFields +
+        categoryField +
+        imageField +
+        tagsField
+      );
     }
 
     if (type === 'event') {
       return (
         commonFields +
+        categoryField +
         eventFields +
         contentField +
+        relatedLinkFields +
+        tagsField +
+        imageField
+      );
+    }
+
+    if (type === 'article') {
+      return (
+        commonFields +
+        categoryField +
+        contentField +
+        youtubeField +
+        relatedLinkFields +
         tagsField +
         imageField
       );
@@ -701,7 +793,9 @@
 
     return (
       commonFields +
+      categoryField +
       contentField +
+      relatedLinkFields +
       tagsField +
       imageField
     );
@@ -720,7 +814,7 @@
       </h3>
 
       <p class="hint">
-        Complete the required fields before publishing.
+        Complete all required fields before publishing.
       </p>
 
       <form id="post-form">
@@ -763,7 +857,7 @@
         'submit',
         event => {
           event.preventDefault();
-          savePost(type);
+          void savePost(type);
         }
       );
     }
@@ -787,7 +881,7 @@
 
     if (file.size > maximumSize) {
       showToast(
-        'The image is too large. Select an image below 3.5 MB.'
+        'The image is too large. Select an image smaller than 3.5 MB.'
       );
 
       event.target.value = '';
@@ -797,7 +891,8 @@
     const reader = new FileReader();
 
     reader.onload = () => {
-      pendingImage = String(reader.result || '');
+      pendingImage =
+        String(reader.result || '');
 
       const preview =
         getElement('f-image-preview');
@@ -822,34 +917,13 @@
   }
 
   /* ==========================================================================
-     Save content
+     Publishing
      ========================================================================== */
 
-  function ensureStore() {
-    if (
-      typeof window.STORE === 'undefined' ||
-      !window.STORE
-    ) {
-      throw new Error(
-        'store.js could not be loaded.'
-      );
-    }
-
-    return window.STORE;
-  }
-
-  function savePost(type) {
-    let store;
-
-    try {
-      store = ensureStore();
-    } catch (error) {
-      showToast(error.message);
-      return;
-    }
-
+  async function savePost(type) {
     const titleInput = getElement('f-title');
     const excerptInput = getElement('f-excerpt');
+    const submitButton = getElement('submit-btn');
 
     const title =
       titleInput?.value.trim() || '';
@@ -857,245 +931,559 @@
     const excerpt =
       excerptInput?.value.trim() || '';
 
-    if (!title || !excerpt) {
-      showToast(
-        'Complete the title and summary fields.'
-      );
-
+    if (!title) {
+      showToast('Enter a publication title.');
+      titleInput?.focus();
       return;
     }
 
-    const storedType = getStoredType(type);
-
-    const existingPost = editingId
-      ? store.getById(editingId)
-      : null;
-
-    if (editingId && !existingPost) {
-      showToast(
-        'The selected publication could not be found.'
-      );
-
+    if (!excerpt) {
+      showToast('Enter a short summary or caption.');
+      excerptInput?.focus();
       return;
     }
 
-    const post = existingPost || {
-      type: storedType
-    };
+    if (submitButton) {
+      submitButton.disabled = true;
 
-    post.type = storedType;
-    post.title = title;
-    post.excerpt = excerpt;
-
-    const contentInput =
-      getElement('f-content');
-
-    if (contentInput) {
-      post.content =
-        contentInput.value.trim();
-
-      if (!post.content) {
-        showToast(
-          'Enter the full publication content.'
-        );
-
-        return;
-      }
-    } else {
-      post.content = excerpt;
+      submitButton.textContent =
+        editingId
+          ? 'Saving changes…'
+          : 'Publishing…';
     }
 
-    const tagsInput =
-      getElement('f-tags');
+    try {
+      const store = ensureStore();
 
-    post.tags = tagsInput
-      ? tagsInput.value
-          .split(',')
-          .map(tag => tag.trim())
-          .filter(Boolean)
-      : [];
+      let post;
 
-    if (type === 'event') {
-      const eventDateInput =
-        getElement('f-eventdate');
+      if (editingId) {
+        post = await store.getById(editingId);
 
-      const locationInput =
-        getElement('f-location');
-
-      if (!eventDateInput?.value) {
-        showToast(
-          'Select the event date and time.'
-        );
-
-        return;
+        if (!post) {
+          throw new Error(
+            'The selected publication could not be found.'
+          );
+        }
+      } else {
+        post = {};
       }
 
-      post.eventDate = new Date(
-        eventDateInput.value
-      ).toISOString();
+      post.type = type;
+      post.title = title;
+      post.excerpt = excerpt;
 
-      post.location =
-        locationInput?.value.trim() || '';
-    }
+      const contentInput =
+        getElement('f-content');
 
-    if (pendingImage) {
-      post.image = pendingImage;
-    }
+      if (contentInput) {
+        post.content =
+          contentInput.value.trim();
 
-    if (
-      type === 'media' &&
-      !post.image
-    ) {
+        if (!post.content) {
+          throw new Error(
+            'Enter the full publication content.'
+          );
+        }
+      } else {
+        post.content = excerpt;
+      }
+
+      const categoryInput =
+        getElement('f-category');
+
+      post.category =
+        categoryInput?.value.trim() || '';
+
+      const tagsInput =
+        getElement('f-tags');
+
+      post.tags = tagsInput
+        ? tagsInput.value
+            .split(',')
+            .map(tag => tag.trim())
+            .filter(Boolean)
+        : [];
+
+      const youtubeInput =
+        getElement('f-youtube');
+
+      post.youtubeUrl =
+        youtubeInput?.value.trim() || '';
+
+      const linkUrlInput =
+        getElement('f-linkurl');
+
+      const linkLabelInput =
+        getElement('f-linklabel');
+
+      post.linkUrl =
+        linkUrlInput?.value.trim() || '';
+
+      post.linkLabel =
+        linkLabelInput?.value.trim() || '';
+
+      if (
+        post.linkLabel &&
+        !post.linkUrl
+      ) {
+        throw new Error(
+          'Enter a related link URL or remove the related link label.'
+        );
+      }
+
+      if (type === 'event') {
+        const eventDateInput =
+          getElement('f-eventdate');
+
+        const locationInput =
+          getElement('f-location');
+
+        const registrationInput =
+          getElement('f-registration');
+
+        if (!eventDateInput?.value) {
+          throw new Error(
+            'Select the event date and time.'
+          );
+        }
+
+        post.eventDate = new Date(
+          eventDateInput.value
+        ).toISOString();
+
+        post.location =
+          locationInput?.value.trim() || '';
+
+        post.registrationUrl =
+          registrationInput?.value.trim() || '';
+      } else {
+        post.eventDate = '';
+        post.location = '';
+        post.registrationUrl = '';
+      }
+
+      if (pendingImage) {
+        post.image = pendingImage;
+      }
+
+      if (
+        type === 'media' &&
+        !post.image
+      ) {
+        throw new Error(
+          'Select an image for the gallery publication.'
+        );
+      }
+
+      post.image = post.image || '';
+      post.imagePath = post.imagePath || '';
+      post.status = 'published';
+
+      if (!editingId) {
+        post.date =
+          new Date().toISOString();
+      }
+
+      await store.upsert(post);
+
+      const wasEditing =
+        Boolean(editingId);
+
+      editingId = null;
+      pendingImage = '';
+
       showToast(
-        'Select an image for the gallery post.'
+        wasEditing
+          ? 'Changes saved successfully.'
+          : `${TYPE_LABELS[type]} published successfully.`
       );
 
-      return;
+      renderForm(type);
+      await renderTable(type);
+    } catch (error) {
+      console.error(
+        'Publication failed:',
+        error
+      );
+
+      showToast(
+        error?.message ||
+          'The publication could not be saved.'
+      );
+    } finally {
+      if (
+        submitButton &&
+        document.body.contains(submitButton)
+      ) {
+        submitButton.disabled = false;
+
+        submitButton.textContent =
+          editingId
+            ? 'Save changes'
+            : `Publish ${TYPE_LABELS[type]}`;
+      }
     }
-
-    post.image = post.image || '';
-
-    if (!editingId) {
-      post.date = new Date().toISOString();
-    }
-
-    store.upsert(post);
-
-    showToast(
-      editingId
-        ? 'Changes saved successfully.'
-        : `${TYPE_LABELS[type]} published successfully.`
-    );
-
-    editingId = null;
-    pendingImage = '';
-
-    renderForm(type);
-    renderTable(type);
   }
 
   /* ==========================================================================
-     Content list
+     Publication list
      ========================================================================== */
 
-  function renderTable(type) {
-    let store;
-
-    try {
-      store = ensureStore();
-    } catch (error) {
-      showToast(error.message);
-      return;
-    }
-
+  async function renderTable(type) {
     const tableWrap = getElement('table-wrap');
 
     if (!tableWrap) {
       return;
     }
 
-    const storedType = getStoredType(type);
-    const posts = store.byType(storedType) || [];
-
-    if (posts.length === 0) {
-      tableWrap.innerHTML = `
-        <div class="empty">
-          No ${TYPE_LABELS[type].toLowerCase()}
-          publications are available yet.
-        </div>
-      `;
-
-      return;
-    }
-
     tableWrap.innerHTML = `
-      <div class="admin-list">
-        ${posts.map(post => `
-          <div class="admin-row">
-
-            ${
-              post.image
-                ? `
-                  <img
-                    class="thumb"
-                    src="${post.image}"
-                    alt=""
-                  >
-                `
-                : `
-                  <div
-                    class="thumb"
-                    aria-hidden="true"
-                  ></div>
-                `
-            }
-
-            <div class="info">
-              <h4>
-                ${escapeHtml(post.title)}
-              </h4>
-
-              <p>
-                ${formatDate(post.date)}
-
-                ${
-                  post.eventDate
-                    ? ` · Event: ${formatDate(post.eventDate)}`
-                    : ''
-                }
-              </p>
-            </div>
-
-            <div class="row-actions">
-              <button
-                class="icon-btn"
-                data-edit="${escapeHtml(post.id)}"
-                type="button"
-                title="Edit publication"
-                aria-label="Edit publication"
-              >
-                ${editIcon()}
-              </button>
-
-              <button
-                class="icon-btn del"
-                data-delete="${escapeHtml(post.id)}"
-                type="button"
-                title="Delete publication"
-                aria-label="Delete publication"
-              >
-                ${trashIcon()}
-              </button>
-            </div>
-
-          </div>
-        `).join('')}
+      <div class="empty">
+        Loading publications…
       </div>
     `;
 
-    tableWrap
-      .querySelectorAll('[data-edit]')
-      .forEach(button => {
-        button.addEventListener('click', () => {
-          loadPostForEditing(
-            button.dataset.edit
-          );
-        });
-      });
+    try {
+      const store = ensureStore();
 
-    tableWrap
-      .querySelectorAll('[data-delete]')
-      .forEach(button => {
-        button.addEventListener('click', () => {
-          deletePost(
-            button.dataset.delete,
-            type
+      /*
+       * store.js already translates:
+       * media -> gallery
+       */
+      const posts =
+        await store.byType(type);
+
+      if (!posts.length) {
+        tableWrap.innerHTML = `
+          <div class="empty">
+            No ${TYPE_LABELS[type].toLowerCase()}
+            publications are available yet.
+          </div>
+        `;
+
+        return;
+      }
+
+      tableWrap.innerHTML = `
+        <div class="admin-list">
+
+          ${posts.map(post => `
+            <div class="admin-row">
+
+              ${
+                post.image
+                  ? `
+                    <img
+                      class="thumb"
+                      src="${escapeHtml(post.image)}"
+                      alt=""
+                    >
+                  `
+                  : `
+                    <div
+                      class="thumb"
+                      aria-hidden="true"
+                    ></div>
+                  `
+              }
+
+              <div class="info">
+                <h4>
+                  ${escapeHtml(post.title)}
+                </h4>
+
+                <p>
+                  ${formatDate(post.date)}
+
+                  ${
+                    post.category
+                      ? ` · ${escapeHtml(post.category)}`
+                      : ''
+                  }
+
+                  ${
+                    post.eventDate
+                      ? ` · Event: ${formatDate(post.eventDate)}`
+                      : ''
+                  }
+                </p>
+
+                <p>
+                  ${escapeHtml(post.excerpt || '')}
+                </p>
+              </div>
+
+              <div class="row-actions">
+
+                <button
+                  class="icon-btn"
+                  data-edit="${escapeHtml(post.id)}"
+                  type="button"
+                  title="Edit publication"
+                  aria-label="Edit publication"
+                >
+                  ${editIcon()}
+                </button>
+
+                <button
+                  class="icon-btn del"
+                  data-delete="${escapeHtml(post.id)}"
+                  type="button"
+                  title="Delete publication"
+                  aria-label="Delete publication"
+                >
+                  ${trashIcon()}
+                </button>
+
+              </div>
+
+            </div>
+          `).join('')}
+
+        </div>
+      `;
+
+      tableWrap
+        .querySelectorAll('[data-edit]')
+        .forEach(button => {
+          button.addEventListener(
+            'click',
+            () => {
+              void loadPostForEditing(
+                button.dataset.edit
+              );
+            }
           );
         });
-      });
+
+      tableWrap
+        .querySelectorAll('[data-delete]')
+        .forEach(button => {
+          button.addEventListener(
+            'click',
+            () => {
+              void deletePost(
+                button.dataset.delete,
+                type
+              );
+            }
+          );
+        });
+    } catch (error) {
+      console.error(
+        'Could not load publications:',
+        error
+      );
+
+      tableWrap.innerHTML = `
+        <div class="empty">
+          ${escapeHtml(
+            error?.message ||
+            'Publications could not be loaded.'
+          )}
+        </div>
+      `;
+    }
   }
 
-  function deletePost(id, type) {
+  /* ==========================================================================
+     Editing
+     ========================================================================== */
+
+  async function loadPostForEditing(id) {
+    try {
+      const store = ensureStore();
+      const post = await store.getById(id);
+
+      if (!post) {
+        throw new Error(
+          'The selected publication could not be found.'
+        );
+      }
+
+      editingId = id;
+      pendingImage = '';
+
+      const type =
+        post.type === 'gallery'
+          ? 'media'
+          : post.type;
+
+      currentTab = type;
+
+      document
+        .querySelectorAll('.admin-tab')
+        .forEach(tab => {
+          tab.classList.toggle(
+            'active',
+            tab.dataset.type === type
+          );
+        });
+
+      renderForm(type);
+
+      const formTitle =
+        getElement('form-title');
+
+      const submitButton =
+        getElement('submit-btn');
+
+      const cancelButton =
+        getElement('cancel-edit');
+
+      if (formTitle) {
+        formTitle.textContent =
+          `Edit ${TYPE_LABELS[type]}`;
+      }
+
+      if (submitButton) {
+        submitButton.textContent =
+          'Save changes';
+      }
+
+      if (cancelButton) {
+        cancelButton.style.display =
+          'inline-flex';
+
+        cancelButton.addEventListener(
+          'click',
+          () => {
+            switchTab(type);
+          }
+        );
+      }
+
+      const titleInput =
+        getElement('f-title');
+
+      const excerptInput =
+        getElement('f-excerpt');
+
+      const contentInput =
+        getElement('f-content');
+
+      const categoryInput =
+        getElement('f-category');
+
+      const tagsInput =
+        getElement('f-tags');
+
+      const youtubeInput =
+        getElement('f-youtube');
+
+      const linkUrlInput =
+        getElement('f-linkurl');
+
+      const linkLabelInput =
+        getElement('f-linklabel');
+
+      if (titleInput) {
+        titleInput.value =
+          post.title || '';
+      }
+
+      if (excerptInput) {
+        excerptInput.value =
+          post.excerpt || '';
+      }
+
+      if (contentInput) {
+        contentInput.value =
+          post.content || '';
+      }
+
+      if (categoryInput) {
+        categoryInput.value =
+          post.category || '';
+      }
+
+      if (tagsInput) {
+        tagsInput.value =
+          Array.isArray(post.tags)
+            ? post.tags.join(', ')
+            : '';
+      }
+
+      if (youtubeInput) {
+        youtubeInput.value =
+          post.youtubeUrl || '';
+      }
+
+      if (linkUrlInput) {
+        linkUrlInput.value =
+          post.linkUrl || '';
+      }
+
+      if (linkLabelInput) {
+        linkLabelInput.value =
+          post.linkLabel || '';
+      }
+
+      if (type === 'event') {
+        const eventDateInput =
+          getElement('f-eventdate');
+
+        const locationInput =
+          getElement('f-location');
+
+        const registrationInput =
+          getElement('f-registration');
+
+        if (eventDateInput) {
+          eventDateInput.value =
+            post.eventDate
+              ? toDateTimeLocal(post.eventDate)
+              : '';
+        }
+
+        if (locationInput) {
+          locationInput.value =
+            post.location || '';
+        }
+
+        if (registrationInput) {
+          registrationInput.value =
+            post.registrationUrl || '';
+        }
+      }
+
+      if (post.image) {
+        const preview =
+          getElement('f-image-preview');
+
+        if (preview) {
+          preview.innerHTML = `
+            <img
+              src="${escapeHtml(post.image)}"
+              alt="Current publication image"
+            >
+          `;
+        }
+      }
+
+      getElement('form-wrap')
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+    } catch (error) {
+      console.error(
+        'Could not edit publication:',
+        error
+      );
+
+      showToast(
+        error?.message ||
+          'The publication could not be opened.'
+      );
+    }
+  }
+
+  /* ==========================================================================
+     Delete publication
+     ========================================================================== */
+
+  async function deletePost(id, type) {
     const confirmed = window.confirm(
       'Delete this publication? This action cannot be undone.'
     );
@@ -1107,212 +1495,35 @@
     try {
       const store = ensureStore();
 
-      store.remove(id);
+      await store.remove(id);
 
       showToast(
         'Publication deleted successfully.'
       );
 
-      renderTable(type);
+      if (editingId === id) {
+        editingId = null;
+        pendingImage = '';
+        renderForm(type);
+      }
+
+      await renderTable(type);
     } catch (error) {
-      showToast(error.message);
-    }
-  }
+      console.error(
+        'Publication deletion failed:',
+        error
+      );
 
-  /* ==========================================================================
-     Edit content
-     ========================================================================== */
-
-  function loadPostForEditing(id) {
-    let store;
-
-    try {
-      store = ensureStore();
-    } catch (error) {
-      showToast(error.message);
-      return;
-    }
-
-    const post = store.getById(id);
-
-    if (!post) {
       showToast(
-        'The selected publication could not be found.'
-      );
-
-      return;
-    }
-
-    editingId = id;
-    pendingImage = '';
-
-    const type = getInterfaceType(post.type);
-
-    currentTab = type;
-
-    document.querySelectorAll('.admin-tab')
-      .forEach(tab => {
-        tab.classList.toggle(
-          'active',
-          tab.dataset.type === type
-        );
-      });
-
-    renderForm(type);
-
-    const formTitle =
-      getElement('form-title');
-
-    const submitButton =
-      getElement('submit-btn');
-
-    const cancelButton =
-      getElement('cancel-edit');
-
-    if (formTitle) {
-      formTitle.textContent =
-        `Edit ${TYPE_LABELS[type]}`;
-    }
-
-    if (submitButton) {
-      submitButton.textContent =
-        'Save changes';
-    }
-
-    if (cancelButton) {
-      cancelButton.style.display =
-        'inline-flex';
-
-      cancelButton.addEventListener(
-        'click',
-        () => {
-          switchTab(type);
-        }
+        error?.message ||
+          'The publication could not be deleted.'
       );
     }
-
-    const titleInput =
-      getElement('f-title');
-
-    const excerptInput =
-      getElement('f-excerpt');
-
-    const contentInput =
-      getElement('f-content');
-
-    const tagsInput =
-      getElement('f-tags');
-
-    if (titleInput) {
-      titleInput.value =
-        post.title || '';
-    }
-
-    if (excerptInput) {
-      excerptInput.value =
-        post.excerpt || '';
-    }
-
-    if (contentInput) {
-      contentInput.value =
-        post.content || '';
-    }
-
-    if (tagsInput) {
-      tagsInput.value =
-        Array.isArray(post.tags)
-          ? post.tags.join(', ')
-          : '';
-    }
-
-    if (type === 'event') {
-      const eventDateInput =
-        getElement('f-eventdate');
-
-      const locationInput =
-        getElement('f-location');
-
-      if (eventDateInput) {
-        eventDateInput.value =
-          post.eventDate
-            ? toDateTimeLocal(post.eventDate)
-            : '';
-      }
-
-      if (locationInput) {
-        locationInput.value =
-          post.location || '';
-      }
-    }
-
-    if (post.image) {
-      const preview =
-        getElement('f-image-preview');
-
-      if (preview) {
-        preview.innerHTML = `
-          <img
-            src="${post.image}"
-            alt="Current publication image"
-          >
-        `;
-      }
-    }
-
-    getElement('form-wrap')
-      ?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
   }
 
   /* ==========================================================================
-     Formatting
+     Icons
      ========================================================================== */
-
-  function formatDate(value) {
-    if (!value) {
-      return '';
-    }
-
-    if (typeof window.fmtDate === 'function') {
-      return window.fmtDate(value);
-    }
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-      return '';
-    }
-
-    return date.toLocaleDateString(
-      'en-ZA',
-      {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      }
-    );
-  }
-
-  function toDateTimeLocal(value) {
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-      return '';
-    }
-
-    const pad = number =>
-      String(number).padStart(2, '0');
-
-    return (
-      `${date.getFullYear()}-` +
-      `${pad(date.getMonth() + 1)}-` +
-      `${pad(date.getDate())}T` +
-      `${pad(date.getHours())}:` +
-      `${pad(date.getMinutes())}`
-    );
-  }
 
   function editIcon() {
     return `
@@ -1352,7 +1563,7 @@
   }
 
   /* ==========================================================================
-     Startup
+     Application startup
      ========================================================================== */
 
   async function initialiseApplication() {
@@ -1386,29 +1597,23 @@
       );
     }
 
-    if (!getSupabaseClient()) {
-      showLogin();
-
-      setMessage(
-        getElement('login-error'),
-        'Supabase failed to load. Check supabase-config.js and the script paths.'
-      );
-
-      return;
-    }
-
     try {
-      const user =
-        await requireAdministrator();
+      const client = getClient();
 
-      if (user) {
-        showDashboard(user);
-      } else {
-        showLogin();
-      }
+      /*
+       * Keep this callback synchronous.
+       */
+      client.auth.onAuthStateChange(event => {
+        if (event === 'SIGNED_OUT') {
+          dashboardInitialised = false;
+          showLogin();
+        }
+      });
+
+      await restoreAdministratorSession();
     } catch (error) {
       console.error(
-        'Administrator session check failed:',
+        'Administrator application failed to start:',
         error
       );
 
@@ -1417,23 +1622,9 @@
       setMessage(
         getElement('login-error'),
         error?.message ||
-          'The administrator session could not be verified.'
+          'The administrator system could not be loaded.'
       );
     }
-
-    /*
-     * Keep this callback synchronous.
-     * Do not await Supabase calls inside onAuthStateChange.
-     */
-    getSupabaseClient().auth.onAuthStateChange(
-      event => {
-        if (
-          event === 'SIGNED_OUT'
-        ) {
-          showLogin();
-        }
-      }
-    );
   }
 
   document.addEventListener(
