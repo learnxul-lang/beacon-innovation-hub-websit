@@ -1,10 +1,16 @@
-/* Beacon Innovation Hub — Password-only Administrator Dashboard */
+/* ==========================================================================
+   Beacon Innovation Hub — Supabase Administrator Dashboard
+   ========================================================================== */
 
 (() => {
   'use strict';
 
+  /* ==========================================================================
+     Configuration
+     ========================================================================== */
+
   const ADMIN_PASSWORD = 'BeaconAdmin@2026';
-  const SESSION_KEY = 'bih_admin_logged_in';
+  const SESSION_KEY = 'bih_admin_session';
 
   const TYPE_LABELS = {
     update: 'Update',
@@ -13,9 +19,14 @@
     media: 'Gallery photograph'
   };
 
+  let currentTab = 'update';
   let editingId = null;
   let pendingImage = '';
   let dashboardInitialised = false;
+
+  /* ==========================================================================
+     Basic helpers
+     ========================================================================== */
 
   function getElement(id) {
     return document.getElementById(id);
@@ -29,6 +40,18 @@
     }
 
     return window.STORE;
+  }
+
+  function getClient() {
+    const store = ensureStore();
+
+    if (!store.client) {
+      throw new Error(
+        'The Supabase client is unavailable.'
+      );
+    }
+
+    return store.client;
   }
 
   function escapeHtml(value) {
@@ -46,6 +69,7 @@
     }
 
     element.textContent = message;
+
     element.style.color =
       type === 'success'
         ? '#18794e'
@@ -116,6 +140,10 @@
     );
   }
 
+  /* ==========================================================================
+     Password-only authentication
+     ========================================================================== */
+
   function showLogin() {
     const loginBox = getElement('login-box');
     const dashboard = getElement('dashboard');
@@ -157,19 +185,11 @@
   }
 
   function setLoginLoading(loading) {
-    const loginForm = getElement('login-form');
-    const button = loginForm?.querySelector(
-      'button[type="submit"]'
-    );
-
-    if (!button) {
-      return;
-    }
+    const button = getElement('login-form')?.querySelector('button[type="submit"]');
+    if (!button) return;
 
     button.disabled = loading;
-    button.textContent = loading
-      ? 'Signing in…'
-      : 'Sign in';
+    button.textContent = loading ? 'Signing in…' : 'Sign in';
   }
 
   function handleLogin(event) {
@@ -177,51 +197,26 @@
 
     const loginError = getElement('login-error');
     const passwordInput = getElement('login-pass');
-
     clearMessage(loginError);
 
     if (!passwordInput) {
-      setMessage(
-        loginError,
-        'The password field is missing.'
-      );
-      return;
-    }
-
-    const password = passwordInput.value;
-
-    if (!password) {
-      setMessage(
-        loginError,
-        'Enter the administrator password.'
-      );
+      setMessage(loginError, 'The password field is missing.');
       return;
     }
 
     setLoginLoading(true);
 
     try {
-      if (password !== ADMIN_PASSWORD) {
-        throw new Error(
-          'Incorrect administrator password.'
-        );
+      if (passwordInput.value !== ADMIN_PASSWORD) {
+        throw new Error('Incorrect administrator password.');
       }
 
-      sessionStorage.setItem(
-        SESSION_KEY,
-        'true'
-      );
-
+      sessionStorage.setItem(SESSION_KEY, 'true');
       passwordInput.value = '';
-
       showDashboard();
       showToast('Administrator login successful.');
     } catch (error) {
-      setMessage(
-        loginError,
-        error?.message ||
-          'The administrator login failed.'
-      );
+      setMessage(loginError, error?.message || 'The administrator login failed.');
     } finally {
       setLoginLoading(false);
     }
@@ -229,25 +224,24 @@
 
   function handleLogout() {
     sessionStorage.removeItem(SESSION_KEY);
-
     dashboardInitialised = false;
     editingId = null;
     pendingImage = '';
-
     showLogin();
     showToast('Signed out successfully.');
   }
 
-  function restoreSession() {
-    const loggedIn =
-      sessionStorage.getItem(SESSION_KEY) === 'true';
-
-    if (loggedIn) {
+  function restoreAdministratorSession() {
+    if (sessionStorage.getItem(SESSION_KEY) === 'true') {
       showDashboard();
     } else {
       showLogin();
     }
   }
+
+  /* ==========================================================================
+     Dashboard tabs
+     ========================================================================== */
 
   function initialiseDashboard() {
     document
@@ -270,6 +264,7 @@
   }
 
   function switchTab(type) {
+    currentTab = type;
     editingId = null;
     pendingImage = '';
 
@@ -282,8 +277,11 @@
         );
       });
 
-    const contentPanel = getElement('content-panel');
-    const settingsPanel = getElement('settings-panel');
+    const contentPanel =
+      getElement('content-panel');
+
+    const settingsPanel =
+      getElement('settings-panel');
 
     const showingSettings =
       type === 'settings';
@@ -306,8 +304,12 @@
     }
   }
 
+  /* ==========================================================================
+     Publishing form
+     ========================================================================== */
+
   function buildFormFields(type) {
-    const media = type === 'media';
+    const isMedia = type === 'media';
 
     const commonFields = `
       <div class="field">
@@ -324,7 +326,7 @@
 
       <div class="field">
         <label for="f-excerpt">
-          ${media ? 'Caption' : 'Short summary'}
+          ${isMedia ? 'Caption' : 'Short summary'}
         </label>
 
         <textarea
@@ -333,7 +335,7 @@
           maxlength="220"
           style="min-height:80px"
           placeholder="${
-            media
+            isMedia
               ? 'Write a caption for this photograph'
               : 'Write a short preview summary'
           }"
@@ -341,9 +343,25 @@
       </div>
     `;
 
+    const contentField = `
+      <div class="field">
+        <label for="f-content">
+          Full content
+        </label>
+
+        <textarea
+          id="f-content"
+          required
+          placeholder="Write the complete publication"
+        ></textarea>
+      </div>
+    `;
+
     const categoryField = `
       <div class="field">
-        <label for="f-category">Category</label>
+        <label for="f-category">
+          Category
+        </label>
 
         <input
           id="f-category"
@@ -354,21 +372,11 @@
       </div>
     `;
 
-    const contentField = `
-      <div class="field">
-        <label for="f-content">Full content</label>
-
-        <textarea
-          id="f-content"
-          required
-          placeholder="Write the complete publication"
-        ></textarea>
-      </div>
-    `;
-
     const tagsField = `
       <div class="field">
-        <label for="f-tags">Tags</label>
+        <label for="f-tags">
+          Tags
+        </label>
 
         <input
           id="f-tags"
@@ -377,7 +385,7 @@
         >
 
         <p class="hint">
-          Separate tags using commas.
+          Separate multiple tags using commas.
         </p>
       </div>
     `;
@@ -385,7 +393,7 @@
     const imageField = `
       <div class="field">
         <label for="f-image">
-          Image ${media ? '(required)' : '(optional)'}
+          Image ${isMedia ? '(required)' : '(optional)'}
         </label>
 
         <input
@@ -400,31 +408,6 @@
         >
           No image selected
         </div>
-      </div>
-    `;
-
-    const relatedFields = `
-      <div class="field">
-        <label for="f-linkurl">Related link</label>
-
-        <input
-          id="f-linkurl"
-          type="url"
-          placeholder="https://example.com"
-        >
-      </div>
-
-      <div class="field">
-        <label for="f-linklabel">
-          Related link label
-        </label>
-
-        <input
-          id="f-linklabel"
-          type="text"
-          maxlength="80"
-          placeholder="For example: Read more"
-        >
       </div>
     `;
 
@@ -466,6 +449,33 @@
       </div>
     `;
 
+    const relatedLinkFields = `
+      <div class="field">
+        <label for="f-linkurl">
+          Related link
+        </label>
+
+        <input
+          id="f-linkurl"
+          type="url"
+          placeholder="https://example.com"
+        >
+      </div>
+
+      <div class="field">
+        <label for="f-linklabel">
+          Related link label
+        </label>
+
+        <input
+          id="f-linklabel"
+          type="text"
+          maxlength="80"
+          placeholder="For example: Read more"
+        >
+      </div>
+    `;
+
     const youtubeField = `
       <div class="field">
         <label for="f-youtube">
@@ -495,7 +505,7 @@
         categoryField +
         eventFields +
         contentField +
-        relatedFields +
+        relatedLinkFields +
         tagsField +
         imageField
       );
@@ -507,7 +517,7 @@
         categoryField +
         contentField +
         youtubeField +
-        relatedFields +
+        relatedLinkFields +
         tagsField +
         imageField
       );
@@ -517,7 +527,7 @@
       commonFields +
       categoryField +
       contentField +
-      relatedFields +
+      relatedLinkFields +
       tagsField +
       imageField
     );
@@ -563,20 +573,26 @@
       </form>
     `;
 
-    getElement('f-image')
-      ?.addEventListener(
+    const imageInput = getElement('f-image');
+
+    if (imageInput) {
+      imageInput.addEventListener(
         'change',
         handleImageSelection
       );
+    }
 
-    getElement('post-form')
-      ?.addEventListener(
+    const postForm = getElement('post-form');
+
+    if (postForm) {
+      postForm.addEventListener(
         'submit',
         event => {
           event.preventDefault();
           void savePost(type);
         }
       );
+    }
   }
 
   function handleImageSelection(event) {
@@ -632,6 +648,10 @@
     reader.readAsDataURL(file);
   }
 
+  /* ==========================================================================
+     Publishing
+     ========================================================================== */
+
   async function savePost(type) {
     const titleInput = getElement('f-title');
     const excerptInput = getElement('f-excerpt');
@@ -650,15 +670,14 @@
     }
 
     if (!excerpt) {
-      showToast(
-        'Enter a short summary or caption.'
-      );
+      showToast('Enter a short summary or caption.');
       excerptInput?.focus();
       return;
     }
 
     if (submitButton) {
       submitButton.disabled = true;
+
       submitButton.textContent =
         editingId
           ? 'Saving changes…'
@@ -668,7 +687,7 @@
     try {
       const store = ensureStore();
 
-      let post = {};
+      let post;
 
       if (editingId) {
         post = await store.getById(editingId);
@@ -678,6 +697,8 @@
             'The selected publication could not be found.'
           );
         }
+      } else {
+        post = {};
       }
 
       post.type = type;
@@ -700,9 +721,11 @@
         post.content = excerpt;
       }
 
+      const categoryInput =
+        getElement('f-category');
+
       post.category =
-        getElement('f-category')
-          ?.value.trim() || '';
+        categoryInput?.value.trim() || '';
 
       const tagsInput =
         getElement('f-tags');
@@ -714,17 +737,23 @@
             .filter(Boolean)
         : [];
 
+      const youtubeInput =
+        getElement('f-youtube');
+
       post.youtubeUrl =
-        getElement('f-youtube')
-          ?.value.trim() || '';
+        youtubeInput?.value.trim() || '';
+
+      const linkUrlInput =
+        getElement('f-linkurl');
+
+      const linkLabelInput =
+        getElement('f-linklabel');
 
       post.linkUrl =
-        getElement('f-linkurl')
-          ?.value.trim() || '';
+        linkUrlInput?.value.trim() || '';
 
       post.linkLabel =
-        getElement('f-linklabel')
-          ?.value.trim() || '';
+        linkLabelInput?.value.trim() || '';
 
       if (
         post.linkLabel &&
@@ -739,24 +768,27 @@
         const eventDateInput =
           getElement('f-eventdate');
 
+        const locationInput =
+          getElement('f-location');
+
+        const registrationInput =
+          getElement('f-registration');
+
         if (!eventDateInput?.value) {
           throw new Error(
             'Select the event date and time.'
           );
         }
 
-        post.eventDate =
-          new Date(
-            eventDateInput.value
-          ).toISOString();
+        post.eventDate = new Date(
+          eventDateInput.value
+        ).toISOString();
 
         post.location =
-          getElement('f-location')
-            ?.value.trim() || '';
+          locationInput?.value.trim() || '';
 
         post.registrationUrl =
-          getElement('f-registration')
-            ?.value.trim() || '';
+          registrationInput?.value.trim() || '';
       } else {
         post.eventDate = '';
         post.location = '';
@@ -817,6 +849,7 @@
         document.body.contains(submitButton)
       ) {
         submitButton.disabled = false;
+
         submitButton.textContent =
           editingId
             ? 'Save changes'
@@ -825,9 +858,12 @@
     }
   }
 
+  /* ==========================================================================
+     Publication list
+     ========================================================================== */
+
   async function renderTable(type) {
-    const tableWrap =
-      getElement('table-wrap');
+    const tableWrap = getElement('table-wrap');
 
     if (!tableWrap) {
       return;
@@ -840,15 +876,20 @@
     `;
 
     try {
+      const store = ensureStore();
+
+      /*
+       * store.js already translates:
+       * media -> gallery
+       */
       const posts =
-        await ensureStore().byType(type);
+        await store.byType(type);
 
       if (!posts.length) {
         tableWrap.innerHTML = `
           <div class="empty">
-            No ${TYPE_LABELS[
-              type
-            ].toLowerCase()} publications are available yet.
+            No ${TYPE_LABELS[type].toLowerCase()}
+            publications are available yet.
           </div>
         `;
 
@@ -857,88 +898,80 @@
 
       tableWrap.innerHTML = `
         <div class="admin-list">
-          ${posts
-            .map(
-              post => `
-                <div class="admin-row">
+
+          ${posts.map(post => `
+            <div class="admin-row">
+
+              ${
+                post.image
+                  ? `
+                    <img
+                      class="thumb"
+                      src="${escapeHtml(post.image)}"
+                      alt=""
+                    >
+                  `
+                  : `
+                    <div
+                      class="thumb"
+                      aria-hidden="true"
+                    ></div>
+                  `
+              }
+
+              <div class="info">
+                <h4>
+                  ${escapeHtml(post.title)}
+                </h4>
+
+                <p>
+                  ${formatDate(post.date)}
 
                   ${
-                    post.image
-                      ? `
-                        <img
-                          class="thumb"
-                          src="${escapeHtml(
-                            post.image
-                          )}"
-                          alt=""
-                        >
-                      `
-                      : `
-                        <div
-                          class="thumb"
-                          aria-hidden="true"
-                        ></div>
-                      `
+                    post.category
+                      ? ` · ${escapeHtml(post.category)}`
+                      : ''
                   }
 
-                  <div class="info">
-                    <h4>
-                      ${escapeHtml(post.title)}
-                    </h4>
+                  ${
+                    post.eventDate
+                      ? ` · Event: ${formatDate(post.eventDate)}`
+                      : ''
+                  }
+                </p>
 
-                    <p>
-                      ${formatDate(post.date)}
+                <p>
+                  ${escapeHtml(post.excerpt || '')}
+                </p>
+              </div>
 
-                      ${
-                        post.category
-                          ? ` · ${escapeHtml(
-                              post.category
-                            )}`
-                          : ''
-                      }
+              <div class="row-actions">
 
-                      ${
-                        post.eventDate
-                          ? ` · Event: ${formatDate(
-                              post.eventDate
-                            )}`
-                          : ''
-                      }
-                    </p>
+                <button
+                  class="icon-btn"
+                  data-edit="${escapeHtml(post.id)}"
+                  type="button"
+                  title="Edit publication"
+                  aria-label="Edit publication"
+                >
+                  ${editIcon()}
+                </button>
 
-                    <p>
-                      ${escapeHtml(
-                        post.excerpt || ''
-                      )}
-                    </p>
-                  </div>
+                <button
+                  class="icon-btn del"
+                  data-delete="${escapeHtml(post.id)}"
+                  type="button"
+                  title="Delete publication"
+                  aria-label="Delete publication"
+                >
+                  ${trashIcon()}
+                </button>
 
-                  <div class="row-actions">
-                    <button
-                      class="icon-btn"
-                      data-edit="${escapeHtml(
-                        post.id
-                      )}"
-                      type="button"
-                    >
-                      Edit
-                    </button>
+              </div>
 
-                    <button
-                      class="icon-btn del"
-                      data-delete="${escapeHtml(
-                        post.id
-                      )}"
-                      type="button"
-                    >
-                      Delete
-                    </button>
-                  </div>
+            </div>
+          `).join('')}
 
-                </div>
-              `
-            )
-            .join('')}
         </div>
       `;
 
@@ -978,17 +1011,21 @@
         <div class="empty">
           ${escapeHtml(
             error?.message ||
-              'Publications could not be loaded.'
+            'Publications could not be loaded.'
           )}
         </div>
       `;
     }
   }
 
+  /* ==========================================================================
+     Editing
+     ========================================================================== */
+
   async function loadPostForEditing(id) {
     try {
-      const post =
-        await ensureStore().getById(id);
+      const store = ensureStore();
+      const post = await store.getById(id);
 
       if (!post) {
         throw new Error(
@@ -1004,87 +1041,156 @@
           ? 'media'
           : post.type;
 
+      currentTab = type;
+
+      document
+        .querySelectorAll('.admin-tab')
+        .forEach(tab => {
+          tab.classList.toggle(
+            'active',
+            tab.dataset.type === type
+          );
+        });
+
       renderForm(type);
 
-      getElement('form-title').textContent =
-        `Edit ${TYPE_LABELS[type]}`;
+      const formTitle =
+        getElement('form-title');
 
-      getElement('submit-btn').textContent =
-        'Save changes';
+      const submitButton =
+        getElement('submit-btn');
 
       const cancelButton =
         getElement('cancel-edit');
 
-      cancelButton.style.display =
-        'inline-flex';
+      if (formTitle) {
+        formTitle.textContent =
+          `Edit ${TYPE_LABELS[type]}`;
+      }
 
-      cancelButton.addEventListener(
-        'click',
-        () => {
-          switchTab(type);
-        }
-      );
+      if (submitButton) {
+        submitButton.textContent =
+          'Save changes';
+      }
 
-      getElement('f-title').value =
-        post.title || '';
+      if (cancelButton) {
+        cancelButton.style.display =
+          'inline-flex';
 
-      getElement('f-excerpt').value =
-        post.excerpt || '';
+        cancelButton.addEventListener(
+          'click',
+          () => {
+            switchTab(type);
+          }
+        );
+      }
 
-      if (getElement('f-content')) {
-        getElement('f-content').value =
+      const titleInput =
+        getElement('f-title');
+
+      const excerptInput =
+        getElement('f-excerpt');
+
+      const contentInput =
+        getElement('f-content');
+
+      const categoryInput =
+        getElement('f-category');
+
+      const tagsInput =
+        getElement('f-tags');
+
+      const youtubeInput =
+        getElement('f-youtube');
+
+      const linkUrlInput =
+        getElement('f-linkurl');
+
+      const linkLabelInput =
+        getElement('f-linklabel');
+
+      if (titleInput) {
+        titleInput.value =
+          post.title || '';
+      }
+
+      if (excerptInput) {
+        excerptInput.value =
+          post.excerpt || '';
+      }
+
+      if (contentInput) {
+        contentInput.value =
           post.content || '';
       }
 
-      if (getElement('f-category')) {
-        getElement('f-category').value =
+      if (categoryInput) {
+        categoryInput.value =
           post.category || '';
       }
 
-      if (getElement('f-tags')) {
-        getElement('f-tags').value =
+      if (tagsInput) {
+        tagsInput.value =
           Array.isArray(post.tags)
             ? post.tags.join(', ')
             : '';
       }
 
-      if (getElement('f-youtube')) {
-        getElement('f-youtube').value =
+      if (youtubeInput) {
+        youtubeInput.value =
           post.youtubeUrl || '';
       }
 
-      if (getElement('f-linkurl')) {
-        getElement('f-linkurl').value =
+      if (linkUrlInput) {
+        linkUrlInput.value =
           post.linkUrl || '';
       }
 
-      if (getElement('f-linklabel')) {
-        getElement('f-linklabel').value =
+      if (linkLabelInput) {
+        linkLabelInput.value =
           post.linkLabel || '';
       }
 
       if (type === 'event') {
-        getElement('f-eventdate').value =
-          post.eventDate
-            ? toDateTimeLocal(post.eventDate)
-            : '';
+        const eventDateInput =
+          getElement('f-eventdate');
 
-        getElement('f-location').value =
-          post.location || '';
+        const locationInput =
+          getElement('f-location');
 
-        getElement('f-registration').value =
-          post.registrationUrl || '';
+        const registrationInput =
+          getElement('f-registration');
+
+        if (eventDateInput) {
+          eventDateInput.value =
+            post.eventDate
+              ? toDateTimeLocal(post.eventDate)
+              : '';
+        }
+
+        if (locationInput) {
+          locationInput.value =
+            post.location || '';
+        }
+
+        if (registrationInput) {
+          registrationInput.value =
+            post.registrationUrl || '';
+        }
       }
 
       if (post.image) {
-        getElement(
-          'f-image-preview'
-        ).innerHTML = `
-          <img
-            src="${escapeHtml(post.image)}"
-            alt="Current publication image"
-          >
-        `;
+        const preview =
+          getElement('f-image-preview');
+
+        if (preview) {
+          preview.innerHTML = `
+            <img
+              src="${escapeHtml(post.image)}"
+              alt="Current publication image"
+            >
+          `;
+        }
       }
 
       getElement('form-wrap')
@@ -1093,12 +1199,21 @@
           block: 'start'
         });
     } catch (error) {
+      console.error(
+        'Could not edit publication:',
+        error
+      );
+
       showToast(
         error?.message ||
           'The publication could not be opened.'
       );
     }
   }
+
+  /* ==========================================================================
+     Delete publication
+     ========================================================================== */
 
   async function deletePost(id, type) {
     const confirmed = window.confirm(
@@ -1110,7 +1225,9 @@
     }
 
     try {
-      await ensureStore().remove(id);
+      const store = ensureStore();
+
+      await store.remove(id);
 
       showToast(
         'Publication deleted successfully.'
@@ -1124,6 +1241,11 @@
 
       await renderTable(type);
     } catch (error) {
+      console.error(
+        'Publication deletion failed:',
+        error
+      );
+
       showToast(
         error?.message ||
           'The publication could not be deleted.'
@@ -1131,20 +1253,66 @@
     }
   }
 
+  /* ==========================================================================
+     Icons
+     ========================================================================== */
+
+  function editIcon() {
+    return `
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="M12 20h9"></path>
+        <path
+          d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"
+        ></path>
+      </svg>
+    `;
+  }
+
+  function trashIcon() {
+    return `
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="M3 6h18"></path>
+        <path d="M8 6V4h8v2"></path>
+        <path d="M19 6l-1 14H6L5 6"></path>
+      </svg>
+    `;
+  }
+
+  /* ==========================================================================
+     Application startup
+     ========================================================================== */
+
   function initialiseApplication() {
-    getElement('login-form')
-      ?.addEventListener(
-        'submit',
-        handleLogin
-      );
+    getElement('login-form')?.addEventListener('submit', handleLogin);
+    getElement('logout-btn')?.addEventListener('click', handleLogout);
 
-    getElement('logout-btn')
-      ?.addEventListener(
-        'click',
-        handleLogout
+    try {
+      ensureStore();
+      restoreAdministratorSession();
+    } catch (error) {
+      console.error('Administrator application failed to start:', error);
+      showLogin();
+      setMessage(
+        getElement('login-error'),
+        error?.message || 'The administrator system could not be loaded.'
       );
-
-    restoreSession();
+    }
   }
 
   document.addEventListener(
