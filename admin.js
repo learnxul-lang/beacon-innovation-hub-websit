@@ -1,15 +1,10 @@
-/* ==========================================================================
-   Beacon Innovation Hub — Supabase Administrator Dashboard
-   ========================================================================== */
+/* Beacon Innovation Hub — Supabase Administrator Dashboard */
 
 (() => {
   'use strict';
 
-  /* ==========================================================================
-     Configuration
-     ========================================================================== */
-
-  const ADMIN_EMAIL = 'philanimaraps@gmail.com';
+  const ADMIN_EMAIL =
+    'philanimaraps@gmail.com';
 
   const TYPE_LABELS = {
     update: 'Update',
@@ -18,27 +13,22 @@
     media: 'Gallery photograph'
   };
 
-  let currentTab = 'update';
   let editingId = null;
   let pendingImage = '';
   let dashboardInitialised = false;
-
-  /* ==========================================================================
-     Basic helpers
-     ========================================================================== */
 
   function getElement(id) {
     return document.getElementById(id);
   }
 
   function ensureStore() {
-    if (typeof STORE === 'undefined' || !STORE) {
+    if (!window.STORE) {
       throw new Error(
         'store.js could not be loaded. Make sure store.js loads before admin.js.'
       );
     }
 
-    return STORE;
+    return window.STORE;
   }
 
   function getClient() {
@@ -62,7 +52,11 @@
       .replaceAll("'", '&#039;');
   }
 
-  function setMessage(element, message, type = 'error') {
+  function setMessage(
+    element,
+    message,
+    type = 'error'
+  ) {
     if (!element) {
       return;
     }
@@ -82,13 +76,23 @@
   }
 
   function showToast(message) {
-    let toast = document.querySelector('.toast');
+    let toast =
+      document.querySelector('.toast');
 
     if (!toast) {
-      toast = document.createElement('div');
+      toast =
+        document.createElement('div');
+
       toast.className = 'toast';
-      toast.setAttribute('role', 'status');
-      toast.setAttribute('aria-live', 'polite');
+      toast.setAttribute(
+        'role',
+        'status'
+      );
+      toast.setAttribute(
+        'aria-live',
+        'polite'
+      );
+
       document.body.appendChild(toast);
     }
 
@@ -97,9 +101,12 @@
 
     clearTimeout(toast._timer);
 
-    toast._timer = window.setTimeout(() => {
-      toast.classList.remove('show');
-    }, 2800);
+    toast._timer = window.setTimeout(
+      () => {
+        toast.classList.remove('show');
+      },
+      2800
+    );
   }
 
   function formatDate(value) {
@@ -113,11 +120,14 @@
       return '';
     }
 
-    return date.toLocaleDateString('en-ZA', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    return date.toLocaleDateString(
+      'en-ZA',
+      {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }
+    );
   }
 
   function toDateTimeLocal(value) {
@@ -132,16 +142,14 @@
 
     return (
       `${date.getFullYear()}-` +
-      `${pad(date.getMonth() + 1)}-` +
+      `${pad(
+        date.getMonth() + 1
+      )}-` +
       `${pad(date.getDate())}T` +
       `${pad(date.getHours())}:` +
       `${pad(date.getMinutes())}`
     );
   }
-
-  /* ==========================================================================
-     Authentication
-     ========================================================================== */
 
   async function getCurrentUser() {
     const client = getClient();
@@ -158,7 +166,9 @@
     return data.user || null;
   }
 
-  async function verifyAdministrator(user) {
+  async function verifyAdministrator(
+    user
+  ) {
     if (!user?.email) {
       return false;
     }
@@ -167,32 +177,28 @@
       .trim()
       .toLowerCase();
 
-    if (email !== ADMIN_EMAIL.toLowerCase()) {
+    if (
+      email !== ADMIN_EMAIL.toLowerCase()
+    ) {
       return false;
     }
 
     const client = getClient();
 
-    /*
-     * First try the is_admin() database function.
-     */
     const {
-      data: isAdmin,
+      data: rpcResult,
       error: rpcError
     } = await client.rpc('is_admin');
 
     if (!rpcError) {
-      return isAdmin === true;
+      return rpcResult === true;
     }
 
     console.warn(
-      'is_admin() could not be called. Trying admin_users table.',
+      'is_admin() could not be called. Trying the admin_users table.',
       rpcError
     );
 
-    /*
-     * Fallback: check the admin_users table directly.
-     */
     const {
       data,
       error
@@ -216,8 +222,11 @@
   }
 
   function showLogin() {
-    const loginBox = getElement('login-box');
-    const dashboard = getElement('dashboard');
+    const loginBox =
+      getElement('login-box');
+
+    const dashboard =
+      getElement('dashboard');
 
     if (loginBox) {
       loginBox.hidden = false;
@@ -231,11 +240,16 @@
   }
 
   function showDashboard(user) {
-    const loginBox = getElement('login-box');
-    const dashboard = getElement('dashboard');
-    const sessionPill = document.querySelector(
-      '.session-pill'
-    );
+    const loginBox =
+      getElement('login-box');
+
+    const dashboard =
+      getElement('dashboard');
+
+    const sessionPill =
+      document.querySelector(
+        '.session-pill'
+      );
 
     if (loginBox) {
       loginBox.hidden = true;
@@ -249,7 +263,8 @@
 
     if (sessionPill) {
       sessionPill.textContent =
-        user?.email || 'Administrator signed in';
+        user?.email ||
+        'Administrator signed in';
     }
 
     if (!dashboardInitialised) {
@@ -259,16 +274,20 @@
   }
 
   function setLoginLoading(loading) {
-    const loginForm = getElement('login-form');
-    const button = loginForm?.querySelector(
-      'button[type="submit"]'
-    );
+    const loginForm =
+      getElement('login-form');
+
+    const button =
+      loginForm?.querySelector(
+        'button[type="submit"]'
+      );
 
     if (!button) {
       return;
     }
 
     button.disabled = loading;
+
     button.textContent = loading
       ? 'Signing in…'
       : 'Sign in';
@@ -277,9 +296,14 @@
   async function handleLogin(event) {
     event.preventDefault();
 
-    const loginError = getElement('login-error');
-    const emailInput = getElement('login-email');
-    const passwordInput = getElement('login-pass');
+    const loginError =
+      getElement('login-error');
+
+    const emailInput =
+      getElement('login-email');
+
+    const passwordInput =
+      getElement('login-pass');
 
     clearMessage(loginError);
 
@@ -296,9 +320,12 @@
       .trim()
       .toLowerCase();
 
-    const password = passwordInput.value;
+    const password =
+      passwordInput.value;
 
-    if (email !== ADMIN_EMAIL.toLowerCase()) {
+    if (
+      email !== ADMIN_EMAIL.toLowerCase()
+    ) {
       setMessage(
         loginError,
         'This email address is not authorised as the website administrator.'
@@ -321,9 +348,13 @@
     try {
       const store = ensureStore();
 
-      await store.login(email, password);
+      await store.login(
+        email,
+        password
+      );
 
-      const user = await getCurrentUser();
+      const user =
+        await getCurrentUser();
 
       if (!user) {
         throw new Error(
@@ -345,7 +376,10 @@
       passwordInput.value = '';
 
       showDashboard(user);
-      showToast('Administrator login successful.');
+
+      showToast(
+        'Administrator login successful.'
+      );
     } catch (error) {
       console.error(
         'Administrator login failed:',
@@ -359,7 +393,9 @@
       if (
         message
           .toLowerCase()
-          .includes('invalid login credentials')
+          .includes(
+            'invalid login credentials'
+          )
       ) {
         message =
           'Incorrect administrator email or password.';
@@ -368,13 +404,18 @@
       if (
         message
           .toLowerCase()
-          .includes('email not confirmed')
+          .includes(
+            'email not confirmed'
+          )
       ) {
         message =
           'Your administrator email has not been confirmed in Supabase.';
       }
 
-      setMessage(loginError, message);
+      setMessage(
+        loginError,
+        message
+      );
     } finally {
       setLoginLoading(false);
     }
@@ -382,31 +423,39 @@
 
   async function handleLogout() {
     try {
-      const store = ensureStore();
-      await store.logout();
+      await ensureStore().logout();
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error(
+        'Logout failed:',
+        error
+      );
     } finally {
       dashboardInitialised = false;
       editingId = null;
       pendingImage = '';
 
       showLogin();
-      showToast('Signed out successfully.');
+
+      showToast(
+        'Signed out successfully.'
+      );
     }
   }
 
-  async function restoreAdministratorSession() {
+  async function restoreSession() {
     try {
       const store = ensureStore();
-      const authenticated = await store.isAuthed();
+
+      const authenticated =
+        await store.isAuthed();
 
       if (!authenticated) {
         showLogin();
         return;
       }
 
-      const user = await getCurrentUser();
+      const user =
+        await getCurrentUser();
 
       if (!user) {
         showLogin();
@@ -439,18 +488,21 @@
     }
   }
 
-  /* ==========================================================================
-     Password update
-     ========================================================================== */
-
-  async function handlePasswordChange(event) {
+  async function handlePasswordChange(
+    event
+  ) {
     event.preventDefault();
 
-    const passwordInput = getElement('pass-new');
-    const messageBox = getElement('pass-msg');
-    const button = event.currentTarget.querySelector(
-      'button[type="submit"]'
-    );
+    const passwordInput =
+      getElement('pass-new');
+
+    const messageBox =
+      getElement('pass-msg');
+
+    const button =
+      event.currentTarget.querySelector(
+        'button[type="submit"]'
+      );
 
     clearMessage(messageBox);
 
@@ -458,7 +510,8 @@
       return;
     }
 
-    const newPassword = passwordInput.value;
+    const newPassword =
+      passwordInput.value;
 
     if (newPassword.length < 8) {
       setMessage(
@@ -471,13 +524,13 @@
 
     if (button) {
       button.disabled = true;
-      button.textContent = 'Updating…';
+      button.textContent =
+        'Updating…';
     }
 
     try {
-      const store = ensureStore();
-
-      await store.changePassword(newPassword);
+      await ensureStore()
+        .changePassword(newPassword);
 
       passwordInput.value = '';
 
@@ -487,7 +540,9 @@
         'success'
       );
 
-      showToast('Password updated successfully.');
+      showToast(
+        'Password updated successfully.'
+      );
     } catch (error) {
       console.error(
         'Password update failed:',
@@ -502,37 +557,40 @@
     } finally {
       if (button) {
         button.disabled = false;
-        button.textContent = 'Update password';
+        button.textContent =
+          'Update password';
       }
     }
   }
-
-  /* ==========================================================================
-     Dashboard tabs
-     ========================================================================== */
 
   function initialiseDashboard() {
     document
       .querySelectorAll('.admin-tab')
       .forEach(tab => {
         if (
-          tab.dataset.listenerAttached === 'true'
+          tab.dataset
+            .listenerAttached === 'true'
         ) {
           return;
         }
 
-        tab.addEventListener('click', () => {
-          switchTab(tab.dataset.type);
-        });
+        tab.addEventListener(
+          'click',
+          () => {
+            switchTab(
+              tab.dataset.type
+            );
+          }
+        );
 
-        tab.dataset.listenerAttached = 'true';
+        tab.dataset
+          .listenerAttached = 'true';
       });
 
     switchTab('update');
   }
 
   function switchTab(type) {
-    currentTab = type;
     editingId = null;
     pendingImage = '';
 
@@ -555,15 +613,23 @@
       type === 'settings';
 
     if (contentPanel) {
-      contentPanel.hidden = showingSettings;
+      contentPanel.hidden =
+        showingSettings;
+
       contentPanel.style.display =
-        showingSettings ? 'none' : 'grid';
+        showingSettings
+          ? 'none'
+          : 'grid';
     }
 
     if (settingsPanel) {
-      settingsPanel.hidden = !showingSettings;
+      settingsPanel.hidden =
+        !showingSettings;
+
       settingsPanel.style.display =
-        showingSettings ? 'block' : 'none';
+        showingSettings
+          ? 'block'
+          : 'none';
     }
 
     if (!showingSettings) {
@@ -572,16 +638,15 @@
     }
   }
 
-  /* ==========================================================================
-     Publishing form
-     ========================================================================== */
-
   function buildFormFields(type) {
-    const isMedia = type === 'media';
+    const media =
+      type === 'media';
 
     const commonFields = `
       <div class="field">
-        <label for="f-title">Title</label>
+        <label for="f-title">
+          Title
+        </label>
 
         <input
           id="f-title"
@@ -594,7 +659,11 @@
 
       <div class="field">
         <label for="f-excerpt">
-          ${isMedia ? 'Caption' : 'Short summary'}
+          ${
+            media
+              ? 'Caption'
+              : 'Short summary'
+          }
         </label>
 
         <textarea
@@ -603,24 +672,10 @@
           maxlength="220"
           style="min-height:80px"
           placeholder="${
-            isMedia
+            media
               ? 'Write a caption for this photograph'
               : 'Write a short preview summary'
           }"
-        ></textarea>
-      </div>
-    `;
-
-    const contentField = `
-      <div class="field">
-        <label for="f-content">
-          Full content
-        </label>
-
-        <textarea
-          id="f-content"
-          required
-          placeholder="Write the complete publication"
         ></textarea>
       </div>
     `;
@@ -640,6 +695,20 @@
       </div>
     `;
 
+    const contentField = `
+      <div class="field">
+        <label for="f-content">
+          Full content
+        </label>
+
+        <textarea
+          id="f-content"
+          required
+          placeholder="Write the complete publication"
+        ></textarea>
+      </div>
+    `;
+
     const tagsField = `
       <div class="field">
         <label for="f-tags">
@@ -653,7 +722,7 @@
         >
 
         <p class="hint">
-          Separate multiple tags using commas.
+          Separate tags using commas.
         </p>
       </div>
     `;
@@ -661,7 +730,11 @@
     const imageField = `
       <div class="field">
         <label for="f-image">
-          Image ${isMedia ? '(required)' : '(optional)'}
+          Image ${
+            media
+              ? '(required)'
+              : '(optional)'
+          }
         </label>
 
         <input
@@ -676,6 +749,33 @@
         >
           No image selected
         </div>
+      </div>
+    `;
+
+    const relatedFields = `
+      <div class="field">
+        <label for="f-linkurl">
+          Related link
+        </label>
+
+        <input
+          id="f-linkurl"
+          type="url"
+          placeholder="https://example.com"
+        >
+      </div>
+
+      <div class="field">
+        <label for="f-linklabel">
+          Related link label
+        </label>
+
+        <input
+          id="f-linklabel"
+          type="text"
+          maxlength="80"
+          placeholder="For example: Read more"
+        >
       </div>
     `;
 
@@ -717,33 +817,6 @@
       </div>
     `;
 
-    const relatedLinkFields = `
-      <div class="field">
-        <label for="f-linkurl">
-          Related link
-        </label>
-
-        <input
-          id="f-linkurl"
-          type="url"
-          placeholder="https://example.com"
-        >
-      </div>
-
-      <div class="field">
-        <label for="f-linklabel">
-          Related link label
-        </label>
-
-        <input
-          id="f-linklabel"
-          type="text"
-          maxlength="80"
-          placeholder="For example: Read more"
-        >
-      </div>
-    `;
-
     const youtubeField = `
       <div class="field">
         <label for="f-youtube">
@@ -773,7 +846,7 @@
         categoryField +
         eventFields +
         contentField +
-        relatedLinkFields +
+        relatedFields +
         tagsField +
         imageField
       );
@@ -785,7 +858,7 @@
         categoryField +
         contentField +
         youtubeField +
-        relatedLinkFields +
+        relatedFields +
         tagsField +
         imageField
       );
@@ -795,14 +868,15 @@
       commonFields +
       categoryField +
       contentField +
-      relatedLinkFields +
+      relatedFields +
       tagsField +
       imageField
     );
   }
 
   function renderForm(type) {
-    const formWrap = getElement('form-wrap');
+    const formWrap =
+      getElement('form-wrap');
 
     if (!formWrap) {
       return;
@@ -818,9 +892,11 @@
       </p>
 
       <form id="post-form">
+
         ${buildFormFields(type)}
 
         <div class="form-actions">
+
           <button
             type="submit"
             class="btn btn-primary btn-block"
@@ -837,41 +913,43 @@
           >
             Cancel editing
           </button>
+
         </div>
+
       </form>
     `;
 
-    const imageInput = getElement('f-image');
-
-    if (imageInput) {
-      imageInput.addEventListener(
+    getElement('f-image')
+      ?.addEventListener(
         'change',
         handleImageSelection
       );
-    }
 
-    const postForm = getElement('post-form');
-
-    if (postForm) {
-      postForm.addEventListener(
+    getElement('post-form')
+      ?.addEventListener(
         'submit',
         event => {
           event.preventDefault();
           void savePost(type);
         }
       );
-    }
   }
 
   function handleImageSelection(event) {
-    const file = event.target.files?.[0];
+    const file =
+      event.target.files?.[0];
 
     if (!file) {
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
-      showToast('Select a valid image file.');
+    if (
+      !file.type.startsWith('image/')
+    ) {
+      showToast(
+        'Select a valid image file.'
+      );
+
       event.target.value = '';
       return;
     }
@@ -888,14 +966,17 @@
       return;
     }
 
-    const reader = new FileReader();
+    const reader =
+      new FileReader();
 
     reader.onload = () => {
       pendingImage =
         String(reader.result || '');
 
       const preview =
-        getElement('f-image-preview');
+        getElement(
+          'f-image-preview'
+        );
 
       if (preview) {
         preview.innerHTML = `
@@ -916,14 +997,15 @@
     reader.readAsDataURL(file);
   }
 
-  /* ==========================================================================
-     Publishing
-     ========================================================================== */
-
   async function savePost(type) {
-    const titleInput = getElement('f-title');
-    const excerptInput = getElement('f-excerpt');
-    const submitButton = getElement('submit-btn');
+    const titleInput =
+      getElement('f-title');
+
+    const excerptInput =
+      getElement('f-excerpt');
+
+    const submitButton =
+      getElement('submit-btn');
 
     const title =
       titleInput?.value.trim() || '';
@@ -932,13 +1014,19 @@
       excerptInput?.value.trim() || '';
 
     if (!title) {
-      showToast('Enter a publication title.');
+      showToast(
+        'Enter a publication title.'
+      );
+
       titleInput?.focus();
       return;
     }
 
     if (!excerpt) {
-      showToast('Enter a short summary or caption.');
+      showToast(
+        'Enter a short summary or caption.'
+      );
+
       excerptInput?.focus();
       return;
     }
@@ -955,18 +1043,19 @@
     try {
       const store = ensureStore();
 
-      let post;
+      let post = {};
 
       if (editingId) {
-        post = await store.getById(editingId);
+        post =
+          await store.getById(
+            editingId
+          );
 
         if (!post) {
           throw new Error(
             'The selected publication could not be found.'
           );
         }
-      } else {
-        post = {};
       }
 
       post.type = type;
@@ -989,11 +1078,10 @@
         post.content = excerpt;
       }
 
-      const categoryInput =
-        getElement('f-category');
-
       post.category =
-        categoryInput?.value.trim() || '';
+        getElement(
+          'f-category'
+        )?.value.trim() || '';
 
       const tagsInput =
         getElement('f-tags');
@@ -1005,23 +1093,20 @@
             .filter(Boolean)
         : [];
 
-      const youtubeInput =
-        getElement('f-youtube');
-
       post.youtubeUrl =
-        youtubeInput?.value.trim() || '';
-
-      const linkUrlInput =
-        getElement('f-linkurl');
-
-      const linkLabelInput =
-        getElement('f-linklabel');
+        getElement(
+          'f-youtube'
+        )?.value.trim() || '';
 
       post.linkUrl =
-        linkUrlInput?.value.trim() || '';
+        getElement(
+          'f-linkurl'
+        )?.value.trim() || '';
 
       post.linkLabel =
-        linkLabelInput?.value.trim() || '';
+        getElement(
+          'f-linklabel'
+        )?.value.trim() || '';
 
       if (
         post.linkLabel &&
@@ -1034,29 +1119,32 @@
 
       if (type === 'event') {
         const eventDateInput =
-          getElement('f-eventdate');
+          getElement(
+            'f-eventdate'
+          );
 
-        const locationInput =
-          getElement('f-location');
-
-        const registrationInput =
-          getElement('f-registration');
-
-        if (!eventDateInput?.value) {
+        if (
+          !eventDateInput?.value
+        ) {
           throw new Error(
             'Select the event date and time.'
           );
         }
 
-        post.eventDate = new Date(
-          eventDateInput.value
-        ).toISOString();
+        post.eventDate =
+          new Date(
+            eventDateInput.value
+          ).toISOString();
 
         post.location =
-          locationInput?.value.trim() || '';
+          getElement(
+            'f-location'
+          )?.value.trim() || '';
 
         post.registrationUrl =
-          registrationInput?.value.trim() || '';
+          getElement(
+            'f-registration'
+          )?.value.trim() || '';
       } else {
         post.eventDate = '';
         post.location = '';
@@ -1064,7 +1152,8 @@
       }
 
       if (pendingImage) {
-        post.image = pendingImage;
+        post.image =
+          pendingImage;
       }
 
       if (
@@ -1076,9 +1165,14 @@
         );
       }
 
-      post.image = post.image || '';
-      post.imagePath = post.imagePath || '';
-      post.status = 'published';
+      post.image =
+        post.image || '';
+
+      post.imagePath =
+        post.imagePath || '';
+
+      post.status =
+        'published';
 
       if (!editingId) {
         post.date =
@@ -1114,9 +1208,12 @@
     } finally {
       if (
         submitButton &&
-        document.body.contains(submitButton)
+        document.body.contains(
+          submitButton
+        )
       ) {
-        submitButton.disabled = false;
+        submitButton.disabled =
+          false;
 
         submitButton.textContent =
           editingId
@@ -1126,12 +1223,9 @@
     }
   }
 
-  /* ==========================================================================
-     Publication list
-     ========================================================================== */
-
   async function renderTable(type) {
-    const tableWrap = getElement('table-wrap');
+    const tableWrap =
+      getElement('table-wrap');
 
     if (!tableWrap) {
       return;
@@ -1144,20 +1238,16 @@
     `;
 
     try {
-      const store = ensureStore();
-
-      /*
-       * store.js already translates:
-       * media -> gallery
-       */
       const posts =
-        await store.byType(type);
+        await ensureStore()
+          .byType(type);
 
       if (!posts.length) {
         tableWrap.innerHTML = `
           <div class="empty">
-            No ${TYPE_LABELS[type].toLowerCase()}
-            publications are available yet.
+            No ${TYPE_LABELS[
+              type
+            ].toLowerCase()} publications are available yet.
           </div>
         `;
 
@@ -1167,84 +1257,107 @@
       tableWrap.innerHTML = `
         <div class="admin-list">
 
-          ${posts.map(post => `
-            <div class="admin-row">
+          ${posts
+            .map(
+              post => `
+                <div class="admin-row">
 
-              ${
-                post.image
-                  ? `
-                    <img
-                      class="thumb"
-                      src="${escapeHtml(post.image)}"
-                      alt=""
+                  ${
+                    post.image
+                      ? `
+                        <img
+                          class="thumb"
+                          src="${escapeHtml(
+                            post.image
+                          )}"
+                          alt=""
+                        >
+                      `
+                      : `
+                        <div
+                          class="thumb"
+                          aria-hidden="true"
+                        ></div>
+                      `
+                  }
+
+                  <div class="info">
+
+                    <h4>
+                      ${escapeHtml(
+                        post.title
+                      )}
+                    </h4>
+
+                    <p>
+                      ${formatDate(
+                        post.date
+                      )}
+
+                      ${
+                        post.category
+                          ? ` · ${escapeHtml(
+                              post.category
+                            )}`
+                          : ''
+                      }
+
+                      ${
+                        post.eventDate
+                          ? ` · Event: ${formatDate(
+                              post.eventDate
+                            )}`
+                          : ''
+                      }
+                    </p>
+
+                    <p>
+                      ${escapeHtml(
+                        post.excerpt ||
+                          ''
+                      )}
+                    </p>
+
+                  </div>
+
+                  <div class="row-actions">
+
+                    <button
+                      class="icon-btn"
+                      data-edit="${escapeHtml(
+                        post.id
+                      )}"
+                      type="button"
+                      title="Edit publication"
                     >
-                  `
-                  : `
-                    <div
-                      class="thumb"
-                      aria-hidden="true"
-                    ></div>
-                  `
-              }
+                      Edit
+                    </button>
 
-              <div class="info">
-                <h4>
-                  ${escapeHtml(post.title)}
-                </h4>
+                    <button
+                      class="icon-btn del"
+                      data-delete="${escapeHtml(
+                        post.id
+                      )}"
+                      type="button"
+                      title="Delete publication"
+                    >
+                      Delete
+                    </button>
 
-                <p>
-                  ${formatDate(post.date)}
+                  </div>
 
-                  ${
-                    post.category
-                      ? ` · ${escapeHtml(post.category)}`
-                      : ''
-                  }
-
-                  ${
-                    post.eventDate
-                      ? ` · Event: ${formatDate(post.eventDate)}`
-                      : ''
-                  }
-                </p>
-
-                <p>
-                  ${escapeHtml(post.excerpt || '')}
-                </p>
-              </div>
-
-              <div class="row-actions">
-
-                <button
-                  class="icon-btn"
-                  data-edit="${escapeHtml(post.id)}"
-                  type="button"
-                  title="Edit publication"
-                  aria-label="Edit publication"
-                >
-                  ${editIcon()}
-                </button>
-
-                <button
-                  class="icon-btn del"
-                  data-delete="${escapeHtml(post.id)}"
-                  type="button"
-                  title="Delete publication"
-                  aria-label="Delete publication"
-                >
-                  ${trashIcon()}
-                </button>
-
-              </div>
-
-            </div>
-          `).join('')}
+                </div>
+              `
+            )
+            .join('')}
 
         </div>
       `;
 
       tableWrap
-        .querySelectorAll('[data-edit]')
+        .querySelectorAll(
+          '[data-edit]'
+        )
         .forEach(button => {
           button.addEventListener(
             'click',
@@ -1257,7 +1370,9 @@
         });
 
       tableWrap
-        .querySelectorAll('[data-delete]')
+        .querySelectorAll(
+          '[data-delete]'
+        )
         .forEach(button => {
           button.addEventListener(
             'click',
@@ -1286,14 +1401,13 @@
     }
   }
 
-  /* ==========================================================================
-     Editing
-     ========================================================================== */
-
-  async function loadPostForEditing(id) {
+  async function loadPostForEditing(
+    id
+  ) {
     try {
-      const store = ensureStore();
-      const post = await store.getById(id);
+      const post =
+        await ensureStore()
+          .getById(id);
 
       if (!post) {
         throw new Error(
@@ -1309,10 +1423,10 @@
           ? 'media'
           : post.type;
 
-      currentTab = type;
-
       document
-        .querySelectorAll('.admin-tab')
+        .querySelectorAll(
+          '.admin-tab'
+        )
         .forEach(tab => {
           tab.classList.toggle(
             'active',
@@ -1322,143 +1436,110 @@
 
       renderForm(type);
 
-      const formTitle =
-        getElement('form-title');
+      getElement(
+        'form-title'
+      ).textContent =
+        `Edit ${TYPE_LABELS[type]}`;
 
-      const submitButton =
-        getElement('submit-btn');
+      getElement(
+        'submit-btn'
+      ).textContent =
+        'Save changes';
 
       const cancelButton =
         getElement('cancel-edit');
 
-      if (formTitle) {
-        formTitle.textContent =
-          `Edit ${TYPE_LABELS[type]}`;
-      }
+      cancelButton.style.display =
+        'inline-flex';
 
-      if (submitButton) {
-        submitButton.textContent =
-          'Save changes';
-      }
+      cancelButton.addEventListener(
+        'click',
+        () => {
+          switchTab(type);
+        }
+      );
 
-      if (cancelButton) {
-        cancelButton.style.display =
-          'inline-flex';
+      getElement('f-title').value =
+        post.title || '';
 
-        cancelButton.addEventListener(
-          'click',
-          () => {
-            switchTab(type);
-          }
-        );
-      }
+      getElement('f-excerpt').value =
+        post.excerpt || '';
 
-      const titleInput =
-        getElement('f-title');
-
-      const excerptInput =
-        getElement('f-excerpt');
-
-      const contentInput =
-        getElement('f-content');
-
-      const categoryInput =
-        getElement('f-category');
-
-      const tagsInput =
-        getElement('f-tags');
-
-      const youtubeInput =
-        getElement('f-youtube');
-
-      const linkUrlInput =
-        getElement('f-linkurl');
-
-      const linkLabelInput =
-        getElement('f-linklabel');
-
-      if (titleInput) {
-        titleInput.value =
-          post.title || '';
-      }
-
-      if (excerptInput) {
-        excerptInput.value =
-          post.excerpt || '';
-      }
-
-      if (contentInput) {
-        contentInput.value =
+      if (getElement('f-content')) {
+        getElement(
+          'f-content'
+        ).value =
           post.content || '';
       }
 
-      if (categoryInput) {
-        categoryInput.value =
+      if (getElement('f-category')) {
+        getElement(
+          'f-category'
+        ).value =
           post.category || '';
       }
 
-      if (tagsInput) {
-        tagsInput.value =
+      if (getElement('f-tags')) {
+        getElement('f-tags').value =
           Array.isArray(post.tags)
             ? post.tags.join(', ')
             : '';
       }
 
-      if (youtubeInput) {
-        youtubeInput.value =
+      if (getElement('f-youtube')) {
+        getElement(
+          'f-youtube'
+        ).value =
           post.youtubeUrl || '';
       }
 
-      if (linkUrlInput) {
-        linkUrlInput.value =
+      if (getElement('f-linkurl')) {
+        getElement(
+          'f-linkurl'
+        ).value =
           post.linkUrl || '';
       }
 
-      if (linkLabelInput) {
-        linkLabelInput.value =
+      if (getElement('f-linklabel')) {
+        getElement(
+          'f-linklabel'
+        ).value =
           post.linkLabel || '';
       }
 
       if (type === 'event') {
-        const eventDateInput =
-          getElement('f-eventdate');
+        getElement(
+          'f-eventdate'
+        ).value =
+          post.eventDate
+            ? toDateTimeLocal(
+                post.eventDate
+              )
+            : '';
 
-        const locationInput =
-          getElement('f-location');
+        getElement(
+          'f-location'
+        ).value =
+          post.location || '';
 
-        const registrationInput =
-          getElement('f-registration');
-
-        if (eventDateInput) {
-          eventDateInput.value =
-            post.eventDate
-              ? toDateTimeLocal(post.eventDate)
-              : '';
-        }
-
-        if (locationInput) {
-          locationInput.value =
-            post.location || '';
-        }
-
-        if (registrationInput) {
-          registrationInput.value =
-            post.registrationUrl || '';
-        }
+        getElement(
+          'f-registration'
+        ).value =
+          post.registrationUrl ||
+          '';
       }
 
       if (post.image) {
-        const preview =
-          getElement('f-image-preview');
-
-        if (preview) {
-          preview.innerHTML = `
-            <img
-              src="${escapeHtml(post.image)}"
-              alt="Current publication image"
-            >
-          `;
-        }
+        getElement(
+          'f-image-preview'
+        ).innerHTML = `
+          <img
+            src="${escapeHtml(
+              post.image
+            )}"
+            alt="Current publication image"
+          >
+        `;
       }
 
       getElement('form-wrap')
@@ -1479,23 +1560,22 @@
     }
   }
 
-  /* ==========================================================================
-     Delete publication
-     ========================================================================== */
-
-  async function deletePost(id, type) {
-    const confirmed = window.confirm(
-      'Delete this publication? This action cannot be undone.'
-    );
+  async function deletePost(
+    id,
+    type
+  ) {
+    const confirmed =
+      window.confirm(
+        'Delete this publication? This action cannot be undone.'
+      );
 
     if (!confirmed) {
       return;
     }
 
     try {
-      const store = ensureStore();
-
-      await store.remove(id);
+      await ensureStore()
+        .remove(id);
 
       showToast(
         'Publication deleted successfully.'
@@ -1521,96 +1601,42 @@
     }
   }
 
-  /* ==========================================================================
-     Icons
-     ========================================================================== */
-
-  function editIcon() {
-    return `
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        aria-hidden="true"
-      >
-        <path d="M12 20h9"></path>
-        <path
-          d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"
-        ></path>
-      </svg>
-    `;
-  }
-
-  function trashIcon() {
-    return `
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        aria-hidden="true"
-      >
-        <path d="M3 6h18"></path>
-        <path d="M8 6V4h8v2"></path>
-        <path d="M19 6l-1 14H6L5 6"></path>
-      </svg>
-    `;
-  }
-
-  /* ==========================================================================
-     Application startup
-     ========================================================================== */
-
   async function initialiseApplication() {
-    const loginForm =
-      getElement('login-form');
-
-    const logoutButton =
-      getElement('logout-btn');
-
-    const passwordForm =
-      getElement('pass-form');
-
-    if (loginForm) {
-      loginForm.addEventListener(
+    getElement('login-form')
+      ?.addEventListener(
         'submit',
         handleLogin
       );
-    }
 
-    if (logoutButton) {
-      logoutButton.addEventListener(
+    getElement('logout-btn')
+      ?.addEventListener(
         'click',
         handleLogout
       );
-    }
 
-    if (passwordForm) {
-      passwordForm.addEventListener(
+    getElement('pass-form')
+      ?.addEventListener(
         'submit',
         handlePasswordChange
       );
-    }
 
     try {
       const client = getClient();
 
-      /*
-       * Keep this callback synchronous.
-       */
-      client.auth.onAuthStateChange(event => {
-        if (event === 'SIGNED_OUT') {
-          dashboardInitialised = false;
-          showLogin();
-        }
-      });
+      client.auth.onAuthStateChange(
+        event => {
+          if (
+            event === 'SIGNED_OUT'
+          ) {
+            dashboardInitialised =
+              false;
 
-      await restoreAdministratorSession();
+            showLogin();
+          }
+        }
+      );
+
+      await restoreSession();
     } catch (error) {
       console.error(
         'Administrator application failed to start:',
