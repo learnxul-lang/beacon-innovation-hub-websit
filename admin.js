@@ -1,10 +1,10 @@
-/* Beacon Innovation Hub — Supabase Administrator Dashboard */
+/* Beacon Innovation Hub — Password-only Administrator Dashboard */
 
 (() => {
   'use strict';
 
-  const ADMIN_EMAIL =
-    'philanimaraps@gmail.com';
+  const ADMIN_PASSWORD = 'BeaconAdmin@2026';
+  const SESSION_KEY = 'bih_admin_logged_in';
 
   const TYPE_LABELS = {
     update: 'Update',
@@ -31,18 +31,6 @@
     return window.STORE;
   }
 
-  function getClient() {
-    const store = ensureStore();
-
-    if (!store.client) {
-      throw new Error(
-        'The Supabase client is unavailable.'
-      );
-    }
-
-    return store.client;
-  }
-
   function escapeHtml(value) {
     return String(value ?? '')
       .replaceAll('&', '&amp;')
@@ -52,17 +40,12 @@
       .replaceAll("'", '&#039;');
   }
 
-  function setMessage(
-    element,
-    message,
-    type = 'error'
-  ) {
+  function setMessage(element, message, type = 'error') {
     if (!element) {
       return;
     }
 
     element.textContent = message;
-
     element.style.color =
       type === 'success'
         ? '#18794e'
@@ -76,23 +59,13 @@
   }
 
   function showToast(message) {
-    let toast =
-      document.querySelector('.toast');
+    let toast = document.querySelector('.toast');
 
     if (!toast) {
-      toast =
-        document.createElement('div');
-
+      toast = document.createElement('div');
       toast.className = 'toast';
-      toast.setAttribute(
-        'role',
-        'status'
-      );
-      toast.setAttribute(
-        'aria-live',
-        'polite'
-      );
-
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
       document.body.appendChild(toast);
     }
 
@@ -101,12 +74,9 @@
 
     clearTimeout(toast._timer);
 
-    toast._timer = window.setTimeout(
-      () => {
-        toast.classList.remove('show');
-      },
-      2800
-    );
+    toast._timer = window.setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2800);
   }
 
   function formatDate(value) {
@@ -120,14 +90,11 @@
       return '';
     }
 
-    return date.toLocaleDateString(
-      'en-ZA',
-      {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      }
-    );
+    return date.toLocaleDateString('en-ZA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   }
 
   function toDateTimeLocal(value) {
@@ -142,91 +109,16 @@
 
     return (
       `${date.getFullYear()}-` +
-      `${pad(
-        date.getMonth() + 1
-      )}-` +
+      `${pad(date.getMonth() + 1)}-` +
       `${pad(date.getDate())}T` +
       `${pad(date.getHours())}:` +
       `${pad(date.getMinutes())}`
     );
   }
 
-  async function getCurrentUser() {
-    const client = getClient();
-
-    const {
-      data,
-      error
-    } = await client.auth.getUser();
-
-    if (error) {
-      return null;
-    }
-
-    return data.user || null;
-  }
-
-  async function verifyAdministrator(
-    user
-  ) {
-    if (!user?.email) {
-      return false;
-    }
-
-    const email = user.email
-      .trim()
-      .toLowerCase();
-
-    if (
-      email !== ADMIN_EMAIL.toLowerCase()
-    ) {
-      return false;
-    }
-
-    const client = getClient();
-
-    const {
-      data: rpcResult,
-      error: rpcError
-    } = await client.rpc('is_admin');
-
-    if (!rpcError) {
-      return rpcResult === true;
-    }
-
-    console.warn(
-      'is_admin() could not be called. Trying the admin_users table.',
-      rpcError
-    );
-
-    const {
-      data,
-      error
-    } = await client
-      .from('admin_users')
-      .select('email, role')
-      .eq('email', email)
-      .eq('role', 'admin')
-      .maybeSingle();
-
-    if (error) {
-      console.error(
-        'Administrator verification failed:',
-        error
-      );
-
-      return false;
-    }
-
-    return Boolean(data);
-  }
-
   function showLogin() {
-    const loginBox =
-      getElement('login-box');
-
-    const dashboard =
-      getElement('dashboard');
+    const loginBox = getElement('login-box');
+    const dashboard = getElement('dashboard');
 
     if (loginBox) {
       loginBox.hidden = false;
@@ -239,17 +131,10 @@
     }
   }
 
-  function showDashboard(user) {
-    const loginBox =
-      getElement('login-box');
-
-    const dashboard =
-      getElement('dashboard');
-
-    const sessionPill =
-      document.querySelector(
-        '.session-pill'
-      );
+  function showDashboard() {
+    const loginBox = getElement('login-box');
+    const dashboard = getElement('dashboard');
+    const sessionPill = document.querySelector('.session-pill');
 
     if (loginBox) {
       loginBox.hidden = true;
@@ -262,9 +147,7 @@
     }
 
     if (sessionPill) {
-      sessionPill.textContent =
-        user?.email ||
-        'Administrator signed in';
+      sessionPill.textContent = 'Administrator signed in';
     }
 
     if (!dashboardInitialised) {
@@ -274,292 +157,95 @@
   }
 
   function setLoginLoading(loading) {
-    const loginForm =
-      getElement('login-form');
-
-    const button =
-      loginForm?.querySelector(
-        'button[type="submit"]'
-      );
+    const loginForm = getElement('login-form');
+    const button = loginForm?.querySelector(
+      'button[type="submit"]'
+    );
 
     if (!button) {
       return;
     }
 
     button.disabled = loading;
-
     button.textContent = loading
       ? 'Signing in…'
       : 'Sign in';
   }
 
-  async function handleLogin(event) {
+  function handleLogin(event) {
     event.preventDefault();
 
-    const loginError =
-      getElement('login-error');
-
-    const emailInput =
-      getElement('login-email');
-
-    const passwordInput =
-      getElement('login-pass');
+    const loginError = getElement('login-error');
+    const passwordInput = getElement('login-pass');
 
     clearMessage(loginError);
 
-    if (!emailInput || !passwordInput) {
+    if (!passwordInput) {
       setMessage(
         loginError,
-        'The administrator login form is incomplete.'
+        'The password field is missing.'
       );
-
       return;
     }
 
-    const email = emailInput.value
-      .trim()
-      .toLowerCase();
-
-    const password =
-      passwordInput.value;
-
-    if (
-      email !== ADMIN_EMAIL.toLowerCase()
-    ) {
-      setMessage(
-        loginError,
-        'This email address is not authorised as the website administrator.'
-      );
-
-      return;
-    }
+    const password = passwordInput.value;
 
     if (!password) {
       setMessage(
         loginError,
-        'Enter your administrator password.'
+        'Enter the administrator password.'
       );
-
       return;
     }
 
     setLoginLoading(true);
 
     try {
-      const store = ensureStore();
+      if (password !== ADMIN_PASSWORD) {
+        throw new Error(
+          'Incorrect administrator password.'
+        );
+      }
 
-      await store.login(
-        email,
-        password
+      sessionStorage.setItem(
+        SESSION_KEY,
+        'true'
       );
-
-      const user =
-        await getCurrentUser();
-
-      if (!user) {
-        throw new Error(
-          'Supabase did not return an authenticated user.'
-        );
-      }
-
-      const authorised =
-        await verifyAdministrator(user);
-
-      if (!authorised) {
-        await store.logout();
-
-        throw new Error(
-          'The account was authenticated but does not have administrator permission.'
-        );
-      }
 
       passwordInput.value = '';
 
-      showDashboard(user);
-
-      showToast(
-        'Administrator login successful.'
-      );
+      showDashboard();
+      showToast('Administrator login successful.');
     } catch (error) {
-      console.error(
-        'Administrator login failed:',
-        error
-      );
-
-      let message =
-        error?.message ||
-        'The administrator login failed.';
-
-      if (
-        message
-          .toLowerCase()
-          .includes(
-            'invalid login credentials'
-          )
-      ) {
-        message =
-          'Incorrect administrator email or password.';
-      }
-
-      if (
-        message
-          .toLowerCase()
-          .includes(
-            'email not confirmed'
-          )
-      ) {
-        message =
-          'Your administrator email has not been confirmed in Supabase.';
-      }
-
       setMessage(
         loginError,
-        message
+        error?.message ||
+          'The administrator login failed.'
       );
     } finally {
       setLoginLoading(false);
     }
   }
 
-  async function handleLogout() {
-    try {
-      await ensureStore().logout();
-    } catch (error) {
-      console.error(
-        'Logout failed:',
-        error
-      );
-    } finally {
-      dashboardInitialised = false;
-      editingId = null;
-      pendingImage = '';
+  function handleLogout() {
+    sessionStorage.removeItem(SESSION_KEY);
 
-      showLogin();
+    dashboardInitialised = false;
+    editingId = null;
+    pendingImage = '';
 
-      showToast(
-        'Signed out successfully.'
-      );
-    }
+    showLogin();
+    showToast('Signed out successfully.');
   }
 
-  async function restoreSession() {
-    try {
-      const store = ensureStore();
+  function restoreSession() {
+    const loggedIn =
+      sessionStorage.getItem(SESSION_KEY) === 'true';
 
-      const authenticated =
-        await store.isAuthed();
-
-      if (!authenticated) {
-        showLogin();
-        return;
-      }
-
-      const user =
-        await getCurrentUser();
-
-      if (!user) {
-        showLogin();
-        return;
-      }
-
-      const authorised =
-        await verifyAdministrator(user);
-
-      if (!authorised) {
-        await store.logout();
-        showLogin();
-        return;
-      }
-
-      showDashboard(user);
-    } catch (error) {
-      console.error(
-        'Session restoration failed:',
-        error
-      );
-
+    if (loggedIn) {
+      showDashboard();
+    } else {
       showLogin();
-
-      setMessage(
-        getElement('login-error'),
-        error?.message ||
-          'The administrator session could not be restored.'
-      );
-    }
-  }
-
-  async function handlePasswordChange(
-    event
-  ) {
-    event.preventDefault();
-
-    const passwordInput =
-      getElement('pass-new');
-
-    const messageBox =
-      getElement('pass-msg');
-
-    const button =
-      event.currentTarget.querySelector(
-        'button[type="submit"]'
-      );
-
-    clearMessage(messageBox);
-
-    if (!passwordInput) {
-      return;
-    }
-
-    const newPassword =
-      passwordInput.value;
-
-    if (newPassword.length < 8) {
-      setMessage(
-        messageBox,
-        'The new password must contain at least eight characters.'
-      );
-
-      return;
-    }
-
-    if (button) {
-      button.disabled = true;
-      button.textContent =
-        'Updating…';
-    }
-
-    try {
-      await ensureStore()
-        .changePassword(newPassword);
-
-      passwordInput.value = '';
-
-      setMessage(
-        messageBox,
-        'Administrator password updated successfully.',
-        'success'
-      );
-
-      showToast(
-        'Password updated successfully.'
-      );
-    } catch (error) {
-      console.error(
-        'Password update failed:',
-        error
-      );
-
-      setMessage(
-        messageBox,
-        error?.message ||
-          'The password could not be updated.'
-      );
-    } finally {
-      if (button) {
-        button.disabled = false;
-        button.textContent =
-          'Update password';
-      }
     }
   }
 
@@ -568,23 +254,16 @@
       .querySelectorAll('.admin-tab')
       .forEach(tab => {
         if (
-          tab.dataset
-            .listenerAttached === 'true'
+          tab.dataset.listenerAttached === 'true'
         ) {
           return;
         }
 
-        tab.addEventListener(
-          'click',
-          () => {
-            switchTab(
-              tab.dataset.type
-            );
-          }
-        );
+        tab.addEventListener('click', () => {
+          switchTab(tab.dataset.type);
+        });
 
-        tab.dataset
-          .listenerAttached = 'true';
+        tab.dataset.listenerAttached = 'true';
       });
 
     switchTab('update');
@@ -603,33 +282,22 @@
         );
       });
 
-    const contentPanel =
-      getElement('content-panel');
-
-    const settingsPanel =
-      getElement('settings-panel');
+    const contentPanel = getElement('content-panel');
+    const settingsPanel = getElement('settings-panel');
 
     const showingSettings =
       type === 'settings';
 
     if (contentPanel) {
-      contentPanel.hidden =
-        showingSettings;
-
+      contentPanel.hidden = showingSettings;
       contentPanel.style.display =
-        showingSettings
-          ? 'none'
-          : 'grid';
+        showingSettings ? 'none' : 'grid';
     }
 
     if (settingsPanel) {
-      settingsPanel.hidden =
-        !showingSettings;
-
+      settingsPanel.hidden = !showingSettings;
       settingsPanel.style.display =
-        showingSettings
-          ? 'block'
-          : 'none';
+        showingSettings ? 'block' : 'none';
     }
 
     if (!showingSettings) {
@@ -639,14 +307,11 @@
   }
 
   function buildFormFields(type) {
-    const media =
-      type === 'media';
+    const media = type === 'media';
 
     const commonFields = `
       <div class="field">
-        <label for="f-title">
-          Title
-        </label>
+        <label for="f-title">Title</label>
 
         <input
           id="f-title"
@@ -659,11 +324,7 @@
 
       <div class="field">
         <label for="f-excerpt">
-          ${
-            media
-              ? 'Caption'
-              : 'Short summary'
-          }
+          ${media ? 'Caption' : 'Short summary'}
         </label>
 
         <textarea
@@ -682,9 +343,7 @@
 
     const categoryField = `
       <div class="field">
-        <label for="f-category">
-          Category
-        </label>
+        <label for="f-category">Category</label>
 
         <input
           id="f-category"
@@ -697,9 +356,7 @@
 
     const contentField = `
       <div class="field">
-        <label for="f-content">
-          Full content
-        </label>
+        <label for="f-content">Full content</label>
 
         <textarea
           id="f-content"
@@ -711,9 +368,7 @@
 
     const tagsField = `
       <div class="field">
-        <label for="f-tags">
-          Tags
-        </label>
+        <label for="f-tags">Tags</label>
 
         <input
           id="f-tags"
@@ -730,11 +385,7 @@
     const imageField = `
       <div class="field">
         <label for="f-image">
-          Image ${
-            media
-              ? '(required)'
-              : '(optional)'
-          }
+          Image ${media ? '(required)' : '(optional)'}
         </label>
 
         <input
@@ -754,9 +405,7 @@
 
     const relatedFields = `
       <div class="field">
-        <label for="f-linkurl">
-          Related link
-        </label>
+        <label for="f-linkurl">Related link</label>
 
         <input
           id="f-linkurl"
@@ -875,8 +524,7 @@
   }
 
   function renderForm(type) {
-    const formWrap =
-      getElement('form-wrap');
+    const formWrap = getElement('form-wrap');
 
     if (!formWrap) {
       return;
@@ -892,11 +540,9 @@
       </p>
 
       <form id="post-form">
-
         ${buildFormFields(type)}
 
         <div class="form-actions">
-
           <button
             type="submit"
             class="btn btn-primary btn-block"
@@ -913,9 +559,7 @@
           >
             Cancel editing
           </button>
-
         </div>
-
       </form>
     `;
 
@@ -936,20 +580,14 @@
   }
 
   function handleImageSelection(event) {
-    const file =
-      event.target.files?.[0];
+    const file = event.target.files?.[0];
 
     if (!file) {
       return;
     }
 
-    if (
-      !file.type.startsWith('image/')
-    ) {
-      showToast(
-        'Select a valid image file.'
-      );
-
+    if (!file.type.startsWith('image/')) {
+      showToast('Select a valid image file.');
       event.target.value = '';
       return;
     }
@@ -966,17 +604,14 @@
       return;
     }
 
-    const reader =
-      new FileReader();
+    const reader = new FileReader();
 
     reader.onload = () => {
       pendingImage =
         String(reader.result || '');
 
       const preview =
-        getElement(
-          'f-image-preview'
-        );
+        getElement('f-image-preview');
 
       if (preview) {
         preview.innerHTML = `
@@ -998,14 +633,9 @@
   }
 
   async function savePost(type) {
-    const titleInput =
-      getElement('f-title');
-
-    const excerptInput =
-      getElement('f-excerpt');
-
-    const submitButton =
-      getElement('submit-btn');
+    const titleInput = getElement('f-title');
+    const excerptInput = getElement('f-excerpt');
+    const submitButton = getElement('submit-btn');
 
     const title =
       titleInput?.value.trim() || '';
@@ -1014,10 +644,7 @@
       excerptInput?.value.trim() || '';
 
     if (!title) {
-      showToast(
-        'Enter a publication title.'
-      );
-
+      showToast('Enter a publication title.');
       titleInput?.focus();
       return;
     }
@@ -1026,14 +653,12 @@
       showToast(
         'Enter a short summary or caption.'
       );
-
       excerptInput?.focus();
       return;
     }
 
     if (submitButton) {
       submitButton.disabled = true;
-
       submitButton.textContent =
         editingId
           ? 'Saving changes…'
@@ -1046,10 +671,7 @@
       let post = {};
 
       if (editingId) {
-        post =
-          await store.getById(
-            editingId
-          );
+        post = await store.getById(editingId);
 
         if (!post) {
           throw new Error(
@@ -1079,9 +701,8 @@
       }
 
       post.category =
-        getElement(
-          'f-category'
-        )?.value.trim() || '';
+        getElement('f-category')
+          ?.value.trim() || '';
 
       const tagsInput =
         getElement('f-tags');
@@ -1094,19 +715,16 @@
         : [];
 
       post.youtubeUrl =
-        getElement(
-          'f-youtube'
-        )?.value.trim() || '';
+        getElement('f-youtube')
+          ?.value.trim() || '';
 
       post.linkUrl =
-        getElement(
-          'f-linkurl'
-        )?.value.trim() || '';
+        getElement('f-linkurl')
+          ?.value.trim() || '';
 
       post.linkLabel =
-        getElement(
-          'f-linklabel'
-        )?.value.trim() || '';
+        getElement('f-linklabel')
+          ?.value.trim() || '';
 
       if (
         post.linkLabel &&
@@ -1119,13 +737,9 @@
 
       if (type === 'event') {
         const eventDateInput =
-          getElement(
-            'f-eventdate'
-          );
+          getElement('f-eventdate');
 
-        if (
-          !eventDateInput?.value
-        ) {
+        if (!eventDateInput?.value) {
           throw new Error(
             'Select the event date and time.'
           );
@@ -1137,14 +751,12 @@
           ).toISOString();
 
         post.location =
-          getElement(
-            'f-location'
-          )?.value.trim() || '';
+          getElement('f-location')
+            ?.value.trim() || '';
 
         post.registrationUrl =
-          getElement(
-            'f-registration'
-          )?.value.trim() || '';
+          getElement('f-registration')
+            ?.value.trim() || '';
       } else {
         post.eventDate = '';
         post.location = '';
@@ -1152,8 +764,7 @@
       }
 
       if (pendingImage) {
-        post.image =
-          pendingImage;
+        post.image = pendingImage;
       }
 
       if (
@@ -1165,14 +776,9 @@
         );
       }
 
-      post.image =
-        post.image || '';
-
-      post.imagePath =
-        post.imagePath || '';
-
-      post.status =
-        'published';
+      post.image = post.image || '';
+      post.imagePath = post.imagePath || '';
+      post.status = 'published';
 
       if (!editingId) {
         post.date =
@@ -1208,13 +814,9 @@
     } finally {
       if (
         submitButton &&
-        document.body.contains(
-          submitButton
-        )
+        document.body.contains(submitButton)
       ) {
-        submitButton.disabled =
-          false;
-
+        submitButton.disabled = false;
         submitButton.textContent =
           editingId
             ? 'Save changes'
@@ -1239,8 +841,7 @@
 
     try {
       const posts =
-        await ensureStore()
-          .byType(type);
+        await ensureStore().byType(type);
 
       if (!posts.length) {
         tableWrap.innerHTML = `
@@ -1256,7 +857,6 @@
 
       tableWrap.innerHTML = `
         <div class="admin-list">
-
           ${posts
             .map(
               post => `
@@ -1282,17 +882,12 @@
                   }
 
                   <div class="info">
-
                     <h4>
-                      ${escapeHtml(
-                        post.title
-                      )}
+                      ${escapeHtml(post.title)}
                     </h4>
 
                     <p>
-                      ${formatDate(
-                        post.date
-                      )}
+                      ${formatDate(post.date)}
 
                       ${
                         post.category
@@ -1313,22 +908,18 @@
 
                     <p>
                       ${escapeHtml(
-                        post.excerpt ||
-                          ''
+                        post.excerpt || ''
                       )}
                     </p>
-
                   </div>
 
                   <div class="row-actions">
-
                     <button
                       class="icon-btn"
                       data-edit="${escapeHtml(
                         post.id
                       )}"
                       type="button"
-                      title="Edit publication"
                     >
                       Edit
                     </button>
@@ -1339,25 +930,20 @@
                         post.id
                       )}"
                       type="button"
-                      title="Delete publication"
                     >
                       Delete
                     </button>
-
                   </div>
 
                 </div>
               `
             )
             .join('')}
-
         </div>
       `;
 
       tableWrap
-        .querySelectorAll(
-          '[data-edit]'
-        )
+        .querySelectorAll('[data-edit]')
         .forEach(button => {
           button.addEventListener(
             'click',
@@ -1370,9 +956,7 @@
         });
 
       tableWrap
-        .querySelectorAll(
-          '[data-delete]'
-        )
+        .querySelectorAll('[data-delete]')
         .forEach(button => {
           button.addEventListener(
             'click',
@@ -1394,20 +978,17 @@
         <div class="empty">
           ${escapeHtml(
             error?.message ||
-            'Publications could not be loaded.'
+              'Publications could not be loaded.'
           )}
         </div>
       `;
     }
   }
 
-  async function loadPostForEditing(
-    id
-  ) {
+  async function loadPostForEditing(id) {
     try {
       const post =
-        await ensureStore()
-          .getById(id);
+        await ensureStore().getById(id);
 
       if (!post) {
         throw new Error(
@@ -1423,27 +1004,12 @@
           ? 'media'
           : post.type;
 
-      document
-        .querySelectorAll(
-          '.admin-tab'
-        )
-        .forEach(tab => {
-          tab.classList.toggle(
-            'active',
-            tab.dataset.type === type
-          );
-        });
-
       renderForm(type);
 
-      getElement(
-        'form-title'
-      ).textContent =
+      getElement('form-title').textContent =
         `Edit ${TYPE_LABELS[type]}`;
 
-      getElement(
-        'submit-btn'
-      ).textContent =
+      getElement('submit-btn').textContent =
         'Save changes';
 
       const cancelButton =
@@ -1466,16 +1032,12 @@
         post.excerpt || '';
 
       if (getElement('f-content')) {
-        getElement(
-          'f-content'
-        ).value =
+        getElement('f-content').value =
           post.content || '';
       }
 
       if (getElement('f-category')) {
-        getElement(
-          'f-category'
-        ).value =
+        getElement('f-category').value =
           post.category || '';
       }
 
@@ -1487,46 +1049,31 @@
       }
 
       if (getElement('f-youtube')) {
-        getElement(
-          'f-youtube'
-        ).value =
+        getElement('f-youtube').value =
           post.youtubeUrl || '';
       }
 
       if (getElement('f-linkurl')) {
-        getElement(
-          'f-linkurl'
-        ).value =
+        getElement('f-linkurl').value =
           post.linkUrl || '';
       }
 
       if (getElement('f-linklabel')) {
-        getElement(
-          'f-linklabel'
-        ).value =
+        getElement('f-linklabel').value =
           post.linkLabel || '';
       }
 
       if (type === 'event') {
-        getElement(
-          'f-eventdate'
-        ).value =
+        getElement('f-eventdate').value =
           post.eventDate
-            ? toDateTimeLocal(
-                post.eventDate
-              )
+            ? toDateTimeLocal(post.eventDate)
             : '';
 
-        getElement(
-          'f-location'
-        ).value =
+        getElement('f-location').value =
           post.location || '';
 
-        getElement(
-          'f-registration'
-        ).value =
-          post.registrationUrl ||
-          '';
+        getElement('f-registration').value =
+          post.registrationUrl || '';
       }
 
       if (post.image) {
@@ -1534,9 +1081,7 @@
           'f-image-preview'
         ).innerHTML = `
           <img
-            src="${escapeHtml(
-              post.image
-            )}"
+            src="${escapeHtml(post.image)}"
             alt="Current publication image"
           >
         `;
@@ -1548,11 +1093,6 @@
           block: 'start'
         });
     } catch (error) {
-      console.error(
-        'Could not edit publication:',
-        error
-      );
-
       showToast(
         error?.message ||
           'The publication could not be opened.'
@@ -1560,22 +1100,17 @@
     }
   }
 
-  async function deletePost(
-    id,
-    type
-  ) {
-    const confirmed =
-      window.confirm(
-        'Delete this publication? This action cannot be undone.'
-      );
+  async function deletePost(id, type) {
+    const confirmed = window.confirm(
+      'Delete this publication? This action cannot be undone.'
+    );
 
     if (!confirmed) {
       return;
     }
 
     try {
-      await ensureStore()
-        .remove(id);
+      await ensureStore().remove(id);
 
       showToast(
         'Publication deleted successfully.'
@@ -1589,11 +1124,6 @@
 
       await renderTable(type);
     } catch (error) {
-      console.error(
-        'Publication deletion failed:',
-        error
-      );
-
       showToast(
         error?.message ||
           'The publication could not be deleted.'
@@ -1601,7 +1131,7 @@
     }
   }
 
-  async function initialiseApplication() {
+  function initialiseApplication() {
     getElement('login-form')
       ?.addEventListener(
         'submit',
@@ -1614,43 +1144,7 @@
         handleLogout
       );
 
-    getElement('pass-form')
-      ?.addEventListener(
-        'submit',
-        handlePasswordChange
-      );
-
-    try {
-      const client = getClient();
-
-      client.auth.onAuthStateChange(
-        event => {
-          if (
-            event === 'SIGNED_OUT'
-          ) {
-            dashboardInitialised =
-              false;
-
-            showLogin();
-          }
-        }
-      );
-
-      await restoreSession();
-    } catch (error) {
-      console.error(
-        'Administrator application failed to start:',
-        error
-      );
-
-      showLogin();
-
-      setMessage(
-        getElement('login-error'),
-        error?.message ||
-          'The administrator system could not be loaded.'
-      );
-    }
+    restoreSession();
   }
 
   document.addEventListener(
