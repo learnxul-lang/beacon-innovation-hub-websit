@@ -41,10 +41,6 @@
     Skip to content
   </a>
 
-  <!-- =========================================================
-       Navigation
-       ========================================================= -->
-
   <nav
     class="site-nav"
     aria-label="Primary navigation"
@@ -127,19 +123,13 @@
     </div>
   </nav>
 
-  <!-- =========================================================
-       Administrator area
-       ========================================================= -->
-
   <main
     id="main-content"
     class="admin-shell"
   >
     <div class="wrap">
 
-      <!-- =====================================================
-           Email and password login
-           ===================================================== -->
+      <!-- Password-only login -->
 
       <section
         id="login-box"
@@ -173,27 +163,6 @@
               class="field"
               style="text-align:left"
             >
-              <label for="login-email">
-                Administrator email
-              </label>
-
-              <input
-                id="login-email"
-                name="email"
-                type="email"
-                required
-                autocomplete="username"
-                inputmode="email"
-                spellcheck="false"
-                placeholder="philanimaraps@gmail.com"
-                value="philanimaraps@gmail.com"
-              >
-            </div>
-
-            <div
-              class="field"
-              style="text-align:left; margin-top:16px"
-            >
               <label for="login-pass">
                 Administrator password
               </label>
@@ -205,7 +174,7 @@
                 required
                 minlength="8"
                 autocomplete="current-password"
-                placeholder="Enter your Supabase password"
+                placeholder="Enter administrator password"
               >
             </div>
 
@@ -214,7 +183,7 @@
               type="submit"
               style="margin-top:18px"
             >
-              Sign in with email
+              Sign in
             </button>
 
             <div
@@ -231,16 +200,13 @@
               Private administration area.
             </strong>
 
-            Sign in using your authorised administrator email
-            and Supabase password.
+            Enter the administrator password to continue.
           </div>
 
         </div>
       </section>
 
-      <!-- =====================================================
-           Administrator dashboard
-           ===================================================== -->
+      <!-- Dashboard -->
 
       <section
         id="dashboard"
@@ -269,7 +235,7 @@
             "
           >
             <span class="session-pill">
-              Signed in
+              Administrator signed in
             </span>
 
             <button
@@ -282,8 +248,6 @@
           </div>
 
         </div>
-
-        <!-- Dashboard tabs -->
 
         <div
           class="admin-tabs"
@@ -338,8 +302,6 @@
 
         </div>
 
-        <!-- Publishing and content listing area -->
-
         <div
           class="admin-layout"
           id="content-panel"
@@ -352,10 +314,6 @@
           <div id="table-wrap"></div>
         </div>
 
-        <!-- ===================================================
-             Settings
-             =================================================== -->
-
         <div
           id="settings-panel"
           hidden
@@ -363,79 +321,31 @@
 
           <div class="grid grid-2">
 
-            <!-- Administrator account -->
-
             <div class="admin-panel">
 
               <h3>
-                Administrator account
+                Administrator access
               </h3>
 
               <p class="hint">
-                Administrator access is managed securely through
-                Supabase Authentication.
+                This website currently uses a temporary
+                password-only login system.
               </p>
 
               <div class="admin-note">
-                Authorised email:
-                <strong>
-                  philanimaraps@gmail.com
-                </strong>
+                To change the password, open
+                <code>admin.js</code> and update:
               </div>
 
-            </div>
-
-            <!-- Password change -->
-
-            <div class="admin-panel">
-
-              <h3>
-                Change password
-              </h3>
-
-              <p class="hint">
-                Enter a new password for your Supabase administrator
-                account.
-              </p>
-
-              <form id="pass-form">
-
-                <div class="field">
-                  <label for="pass-new">
-                    New administrator password
-                  </label>
-
-                  <input
-                    id="pass-new"
-                    name="new-password"
-                    type="password"
-                    required
-                    minlength="8"
-                    autocomplete="new-password"
-                    placeholder="Enter at least 8 characters"
-                  >
-                </div>
-
-                <button
-                  class="btn btn-primary"
-                  type="submit"
-                  style="margin-top:16px"
-                >
-                  Update password
-                </button>
-
-                <div
-                  class="error-msg"
-                  id="pass-msg"
-                  aria-live="polite"
-                  style="margin-top:12px"
-                ></div>
-
-              </form>
+              <pre
+                style="
+                  margin-top:14px;
+                  white-space:pre-wrap;
+                  overflow-wrap:anywhere;
+                "
+              ><code>const ADMIN_PASSWORD = 'BeaconAdmin@2026';</code></pre>
 
             </div>
-
-            <!-- Content management information -->
 
             <div class="admin-panel">
 
@@ -449,18 +359,12 @@
               </p>
 
               <p class="hint">
-                Publications are stored in the Supabase
-                <code>posts</code> table.
-              </p>
-
-              <p class="hint">
-                Uploaded images are stored in the
-                <code>post-images</code> storage bucket.
+                Updates, events, articles and gallery photographs
+                are managed through the existing
+                <code>STORE</code> functions.
               </p>
 
             </div>
-
-            <!-- Publishing guidance -->
 
             <div class="admin-panel">
 
@@ -469,17 +373,34 @@
               </h3>
 
               <p class="hint">
-                Complete all required fields before selecting the
-                publication button.
+                Complete every required field before publishing.
               </p>
 
               <p class="hint">
-                Gallery posts require an image. Updates, events and
-                articles may use an optional image.
+                Gallery publications require an image.
               </p>
 
               <p class="hint">
-                Keep images below 3.5 MB for reliable uploading.
+                Keep uploaded images below 3.5 MB.
+              </p>
+
+            </div>
+
+            <div class="admin-panel">
+
+              <h3>
+                Temporary security notice
+              </h3>
+
+              <p class="hint">
+                This login method is not suitable for sensitive
+                information because the password is stored inside
+                the website JavaScript.
+              </p>
+
+              <p class="hint">
+                Return to Supabase Authentication when you are ready
+                for secure administrator access.
               </p>
 
             </div>
@@ -494,8 +415,8 @@
               Security:
             </strong>
 
-            Sign out after publishing and do not share your
-            administrator email or password.
+            Sign out after publishing and do not share the
+            administrator password.
           </div>
 
         </div>
@@ -504,10 +425,6 @@
 
     </div>
   </main>
-
-  <!-- =========================================================
-       Footer
-       ========================================================= -->
 
   <footer>
     <div class="wrap">
@@ -642,18 +559,18 @@
     </div>
   </footer>
 
-  <!-- =========================================================
-       Scripts
+  <!--
+    Publishing still uses your STORE system.
 
-       All files are in the main project directory.
-       Supabase must load before store.js and admin.js.
-       ========================================================= -->
+    Keep Supabase scripts only while store.js still relies on
+    Supabase for posts and image storage.
+  -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
-<script src="store.js"></script>
-<script src="main.js"></script>
-<script src="admin.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="store.js"></script>
+  <script src="main.js"></script>
+  <script src="admin.js"></script>
 
 </body>
 </html>
