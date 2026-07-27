@@ -35,6 +35,7 @@
   function ensureStore() {
     if (!window.STORE) {
       throw new Error(
+        window.STORE_LOAD_ERROR ||
         'store.js could not be loaded. Make sure store.js loads before admin.js.'
       );
     }

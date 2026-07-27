@@ -11,3 +11,13 @@ Static website connected to Supabase for authentication, database content and im
 6. Open `/admin.html` manually and sign in with the Supabase administrator account.
 
 The public publishable key is intentionally present in `js/supabase-config.js`; security depends on the included RLS policies. Never add a secret/service-role key.
+
+
+## Temporary password-only admin mode
+
+1. Run `SUPABASE_SETUP.sql` in the Supabase SQL Editor.
+2. Change `ADMIN_PASSWORD` near the top of `admin.js`.
+3. Commit and redeploy the site.
+4. Hard-refresh the admin page.
+
+Security warning: this mode stores the password in public JavaScript and enables anonymous database writes. It is intended only as a temporary setup.

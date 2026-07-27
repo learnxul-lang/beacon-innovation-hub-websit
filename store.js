@@ -1,28 +1,50 @@
-/* Beacon Innovation Hub — password-only admin with anonymous Supabase publishing. */
+/* Beacon Innovation Hub — password-only admin with direct Supabase REST access. */
 
-window.STORE = (() => {
+(() => {
   'use strict';
 
   const cfg = window.BIH_SUPABASE_CONFIG || {};
 
-  if (!window.supabase) {
-    throw new Error('Supabase JavaScript library was not loaded.');
-  }
-
   if (!cfg.url || !cfg.key) {
-    throw new Error('Supabase configuration is missing. Check supabase-config.js.');
+    window.STORE_LOAD_ERROR = 'Supabase configuration is missing. Check supabase-config.js.';
+    console.error(window.STORE_LOAD_ERROR);
+    return;
   }
 
-  const client = window.supabase.createClient(cfg.url, cfg.key, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false
-    }
-  });
+  const baseUrl = String(cfg.url).replace(/\/$/, '');
+  const apiKey = String(cfg.key);
 
   const dbType = type => type === 'media' ? 'gallery' : type;
   const uiType = type => type === 'gallery' ? 'media' : type;
+
+  function headers(extra = {}) {
+    return {
+      apikey: apiKey,
+      Authorization: `Bearer ${apiKey}`,
+      ...extra
+    };
+  }
+
+  async function request(url, options = {}) {
+    const response = await fetch(url, options);
+    const text = await response.text();
+    let body = null;
+
+    if (text) {
+      try {
+        body = JSON.parse(text);
+      } catch (_) {
+        body = text;
+      }
+    }
+
+    if (!response.ok) {
+      const message = body?.message || body?.error_description || body?.error || text || `Request failed (${response.status}).`;
+      throw new Error(message);
+    }
+
+    return body;
+  }
 
   function slugify(value) {
     return String(value || '')
@@ -57,39 +79,48 @@ window.STORE = (() => {
   }
 
   async function getAll() {
-    const { data, error } = await client
-      .from('posts')
-      .select('*')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false });
+    const query = new URLSearchParams({
+      select: '*',
+      status: 'eq.published',
+      order: 'published_at.desc'
+    });
 
-    if (error) throw new Error(error.message);
-    return (data || []).map(fromRow);
+    const rows = await request(`${baseUrl}/rest/v1/posts?${query}`, {
+      headers: headers()
+    });
+
+    return (rows || []).map(fromRow);
   }
 
   async function byType(type) {
-    const { data, error } = await client
-      .from('posts')
-      .select('*')
-      .eq('type', dbType(type))
-      .eq('status', 'published')
-      .order('published_at', { ascending: false });
+    const query = new URLSearchParams({
+      select: '*',
+      type: `eq.${dbType(type)}`,
+      status: 'eq.published',
+      order: 'published_at.desc'
+    });
 
-    if (error) throw new Error(error.message);
-    return (data || []).map(fromRow);
+    const rows = await request(`${baseUrl}/rest/v1/posts?${query}`, {
+      headers: headers()
+    });
+
+    return (rows || []).map(fromRow);
   }
 
   async function getById(id) {
     if (!id) return null;
 
-    const { data, error } = await client
-      .from('posts')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
+    const query = new URLSearchParams({
+      select: '*',
+      id: `eq.${id}`,
+      limit: '1'
+    });
 
-    if (error) throw new Error(error.message);
-    return data ? fromRow(data) : null;
+    const rows = await request(`${baseUrl}/rest/v1/posts?${query}`, {
+      headers: headers()
+    });
+
+    return rows?.[0] ? fromRow(rows[0]) : null;
   }
 
   function dataUrlToBlob(dataUrl) {
@@ -114,25 +145,24 @@ window.STORE = (() => {
 
     const blob = dataUrlToBlob(image);
     const extension = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-    const id = typeof crypto.randomUUID === 'function'
+    const fileId = typeof crypto.randomUUID === 'function'
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    const path = `public/${id}.${extension}`;
+    const path = `public/${fileId}.${extension}`;
 
-    const { error } = await client.storage
-      .from('post-images')
-      .upload(path, blob, {
-        contentType: blob.type,
-        upsert: false
-      });
+    await request(`${baseUrl}/storage/v1/object/post-images/${encodeURI(path)}`, {
+      method: 'POST',
+      headers: headers({
+        'Content-Type': blob.type,
+        'x-upsert': 'false'
+      }),
+      body: blob
+    });
 
-    if (error) throw new Error(`Image upload failed: ${error.message}`);
-
-    const { data } = client.storage
-      .from('post-images')
-      .getPublicUrl(path);
-
-    return { url: data.publicUrl, path };
+    return {
+      url: `${baseUrl}/storage/v1/object/public/post-images/${path}`,
+      path
+    };
   }
 
   async function upsert(post) {
@@ -167,41 +197,63 @@ window.STORE = (() => {
       category: post.category || null
     };
 
-    const result = post.id
-      ? await client.from('posts').update(payload).eq('id', post.id).select().single()
-      : await client.from('posts').insert(payload).select().single();
+    let rows;
 
-    if (result.error) throw new Error(result.error.message);
-    return fromRow(result.data);
+    if (post.id) {
+      const query = new URLSearchParams({ id: `eq.${post.id}` });
+      rows = await request(`${baseUrl}/rest/v1/posts?${query}`, {
+        method: 'PATCH',
+        headers: headers({
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation'
+        }),
+        body: JSON.stringify(payload)
+      });
+    } else {
+      rows = await request(`${baseUrl}/rest/v1/posts`, {
+        method: 'POST',
+        headers: headers({
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation'
+        }),
+        body: JSON.stringify(payload)
+      });
+    }
+
+    if (!rows?.[0]) throw new Error('Supabase did not return the saved publication.');
+    return fromRow(rows[0]);
   }
 
   async function remove(id) {
     const old = await getById(id);
+    const query = new URLSearchParams({ id: `eq.${id}` });
 
-    const { error } = await client
-      .from('posts')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw new Error(error.message);
+    await request(`${baseUrl}/rest/v1/posts?${query}`, {
+      method: 'DELETE',
+      headers: headers({ Prefer: 'return=minimal' })
+    });
 
     if (old?.imagePath) {
-      const { error: imageError } = await client.storage
-        .from('post-images')
-        .remove([old.imagePath]);
-
-      if (imageError) {
-        console.warn('Post deleted, but image removal failed:', imageError);
+      try {
+        await request(`${baseUrl}/storage/v1/object/post-images`, {
+          method: 'DELETE',
+          headers: headers({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ prefixes: [old.imagePath] })
+        });
+      } catch (error) {
+        console.warn('Post deleted, but its image could not be removed:', error);
       }
     }
   }
 
-  return {
-    client,
+  window.STORE = {
     getAll,
     byType,
     getById,
     upsert,
     remove
   };
+
+  window.STORE_LOAD_ERROR = null;
+  console.info('Beacon STORE loaded successfully.');
 })();

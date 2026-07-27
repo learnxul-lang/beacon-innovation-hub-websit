@@ -1,4 +1,4 @@
-/* Beacon Innovation Hub — Supabase configuration */
+/* Beacon Innovation Hub — public Supabase configuration. */
 
 window.BIH_SUPABASE_CONFIG = {
   url: 'https://pfrayjhaphzuynncfjnp.supabase.co',
