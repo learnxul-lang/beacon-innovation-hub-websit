@@ -42,29 +42,33 @@
 
         <ul class="nav-links">
           <li>
-            <a href="/">Home</a>
+            <a href="/" data-page="/">Home</a>
           </li>
 
           <li>
-            <a href="/updates/">Updates</a>
+            <a href="/updates/" data-page="/updates/">Updates</a>
           </li>
 
           <li>
-            <a href="/events/">Events</a>
+            <a href="/events/" data-page="/events/">Events</a>
           </li>
 
           <li>
-            <a href="/articles/" aria-current="page">
+            <a
+              href="/articles/"
+              data-page="/articles/"
+              aria-current="page"
+            >
               Articles &amp; Reviews
             </a>
           </li>
 
           <li>
-            <a href="/gallery/">Gallery</a>
+            <a href="/gallery/" data-page="/gallery/">Gallery</a>
           </li>
 
           <li>
-            <a href="/about/">About Us</a>
+            <a href="/about/" data-page="/about/">About Us</a>
           </li>
         </ul>
       </div>
@@ -73,22 +77,27 @@
     <main id="main-content">
       <header class="page-head">
         <div class="wrap">
-          <div class="eyebrow">Articles and reviews</div>
+          <div class="eyebrow">
+            Articles and reviews
+          </div>
 
           <h1>
             Software engineering knowledge that leads to action
           </h1>
 
           <p class="lede">
-            Explore the latest articles, technical insights, summit reviews
-            and educational videos from Beacon Innovation Hub.
+            Explore the latest articles, educational videos, summit reviews
+            and technical insights from Beacon Innovation Hub.
           </p>
         </div>
       </header>
 
       <section aria-labelledby="articles-heading">
         <div class="wrap">
-          <h2 id="articles-heading" class="visually-hidden">
+          <h2
+            id="articles-heading"
+            class="visually-hidden"
+          >
             All articles and reviews
           </h2>
 
@@ -109,7 +118,7 @@
               <h2>JavaScript is required</h2>
 
               <p>
-                Please enable JavaScript in your browser to load the latest
+                Please enable JavaScript in your browser to view the latest
                 articles and reviews.
               </p>
             </div>
@@ -142,6 +151,10 @@
             <h4>Explore</h4>
 
             <ul>
+              <li>
+                <a href="/">Home</a>
+              </li>
+
               <li>
                 <a href="/updates/">Official updates</a>
               </li>
@@ -206,16 +219,19 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        const filtersContainer =
+        const filterContainer =
           document.getElementById("article-filters");
 
-        const articlesContainer =
+        const articleContainer =
           document.getElementById("all-articles");
 
-        if (
-          typeof renderArticleFilters === "function" &&
-          typeof renderArticles === "function"
-        ) {
+        const filtersAvailable =
+          typeof renderArticleFilters === "function";
+
+        const articlesAvailable =
+          typeof renderArticles === "function";
+
+        if (filtersAvailable && articlesAvailable) {
           renderArticleFilters(
             "article-filters",
             "all-articles",
@@ -225,17 +241,22 @@
           return;
         }
 
-        if (filtersContainer) {
-          filtersContainer.hidden = true;
+        if (filterContainer) {
+          filterContainer.hidden = true;
         }
 
-        if (articlesContainer) {
-          articlesContainer.innerHTML = `
+        if (articleContainer) {
+          articleContainer.innerHTML = `
             <div class="empty-state">
               <h2>Articles could not be loaded</h2>
+
               <p>
                 Please refresh the page or return later.
               </p>
+
+              <a class="btn btn-primary" href="/">
+                Return to homepage
+              </a>
             </div>
           `;
         }
