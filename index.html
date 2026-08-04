@@ -1,16 +1,17 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Google tag (gtag.js) -->
+    <!-- Google Analytics -->
     <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-DNH00V8H4V"
     ></script>
+
     <script>
       window.dataLayer = window.dataLayer || [];
 
       function gtag() {
-        window.dataLayer.push(arguments);
+        dataLayer.push(arguments);
       }
 
       gtag("js", new Date());
@@ -18,12 +19,15 @@
     </script>
 
     <meta charset="UTF-8" />
+
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0"
     />
 
-    <title>Beacon Innovation Hub — Where Ideas Transform the Future</title>
+    <title>
+      Beacon Innovation Hub — Where Ideas Transform the Future
+    </title>
 
     <meta
       name="google-site-verification"
@@ -35,14 +39,237 @@
       content="Official Beacon Innovation Hub updates, events, software engineering articles and summit reviews."
     />
 
-    <link rel="icon" type="image/webp" href="beacon-mark.webp" />
-    <link rel="stylesheet" href="/style.css" />
+    <link
+      rel="icon"
+      type="image/webp"
+      href="beacon-mark.webp"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+
+    <style>
+      /* ==================================================
+         HOMEPAGE MOBILE NAVIGATION
+      ================================================== */
+
+      .nav-burger {
+        display: none;
+        width: 46px;
+        height: 46px;
+        padding: 10px;
+        margin-left: auto;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 5px;
+        position: relative;
+        z-index: 1002;
+      }
+
+      .burger-line {
+        display: block;
+        width: 23px;
+        height: 2px;
+        border-radius: 10px;
+        background: currentColor;
+        transition:
+          transform 0.25s ease,
+          opacity 0.25s ease;
+      }
+
+      .nav-burger.is-active .burger-line:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+      }
+
+      .nav-burger.is-active .burger-line:nth-child(2) {
+        opacity: 0;
+      }
+
+      .nav-burger.is-active .burger-line:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+      }
+
+      /* ==================================================
+         HOMEPAGE HIGHLIGHT LINKS
+      ================================================== */
+
+      .highlight-navigation {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .highlight-link {
+        display: flex;
+        min-height: 90px;
+        padding: 22px;
+        border: 1px solid rgba(0, 0, 0, 0.09);
+        border-radius: 18px;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 700;
+        background: var(--surface, #ffffff);
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease,
+          border-color 0.2s ease;
+      }
+
+      .highlight-link:hover,
+      .highlight-link:focus-visible {
+        transform: translateY(-3px);
+        border-color: rgba(37, 99, 235, 0.35);
+        box-shadow: 0 15px 35px rgba(15, 23, 42, 0.1);
+      }
+
+      /* ==================================================
+         LOADING AND EMPTY STATES
+      ================================================== */
+
+      .content-loading,
+      .empty-state,
+      .content-error {
+        grid-column: 1 / -1;
+        width: 100%;
+        padding: 42px 24px;
+        border: 1px dashed rgba(0, 0, 0, 0.16);
+        border-radius: 18px;
+        text-align: center;
+      }
+
+      .content-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .loading-spinner {
+        display: block;
+        width: 32px;
+        height: 32px;
+        margin-bottom: 14px;
+        border: 3px solid rgba(37, 99, 235, 0.15);
+        border-top-color: currentColor;
+        border-radius: 50%;
+        animation: homepage-spin 0.8s linear infinite;
+      }
+
+      @keyframes homepage-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .empty-state h3,
+      .content-error h3 {
+        margin-top: 0;
+        margin-bottom: 8px;
+      }
+
+      .empty-state p,
+      .content-error p {
+        margin-bottom: 20px;
+      }
+
+      /* ==================================================
+         MOBILE LAYOUT
+      ================================================== */
+
+      @media (max-width: 820px) {
+        .nav-inner {
+          position: relative;
+        }
+
+        .nav-burger {
+          display: inline-flex;
+        }
+
+        .nav-links {
+          display: none;
+          position: absolute;
+          top: calc(100% + 10px);
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          margin: 0;
+          padding: 12px;
+          border: 1px solid rgba(0, 0, 0, 0.09);
+          border-radius: 18px;
+          background: var(--surface, #ffffff);
+          box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .nav-links.nav-open {
+          display: flex;
+        }
+
+        .nav-links li {
+          width: 100%;
+        }
+
+        .nav-links a {
+          display: block;
+          width: 100%;
+          padding: 13px 15px;
+          border-radius: 11px;
+        }
+
+        .nav-links a:hover,
+        .nav-links a:focus-visible {
+          background: rgba(37, 99, 235, 0.09);
+        }
+
+        body.menu-open {
+          overflow: hidden;
+        }
+
+        .highlight-navigation {
+          grid-template-columns: 1fr;
+        }
+
+        .highlight-link {
+          min-height: 70px;
+        }
+      }
+
+      @media (max-width: 540px) {
+        .brand span {
+          font-size: 0.88rem;
+        }
+
+        .brand img {
+          width: 36px;
+          height: 36px;
+        }
+
+        .section-head {
+          align-items: flex-start;
+        }
+
+        .section-head .btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
   </head>
 
   <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content">
+      Skip to content
+    </a>
 
-    <!-- Navigation -->
+    <!-- Primary navigation -->
     <nav class="site-nav" aria-label="Primary navigation">
       <div class="wrap nav-inner">
         <a
@@ -68,35 +295,56 @@
 
         <ul class="nav-links" id="primary-navigation">
           <li>
-            <a href="index.html" data-page="index.html">Home</a>
+            <a
+              href="index.html"
+              data-page="index.html"
+              aria-current="page"
+            >
+              Home
+            </a>
           </li>
 
           <li>
-            <a href="updates/index.html" data-page="updates/index.html">
+            <a
+              href="updates/index.html"
+              data-page="updates/index.html"
+            >
               Updates
             </a>
           </li>
 
           <li>
-            <a href="events/index.html" data-page="events/index.html">
+            <a
+              href="events/index.html"
+              data-page="events/index.html"
+            >
               Events
             </a>
           </li>
 
           <li>
-            <a href="articles/index.html" data-page="articles/index.html">
+            <a
+              href="articles/index.html"
+              data-page="articles/index.html"
+            >
               Articles &amp; Reviews
             </a>
           </li>
 
           <li>
-            <a href="gallery/index.html" data-page="gallery/index.html">
+            <a
+              href="gallery/index.html"
+              data-page="gallery/index.html"
+            >
               Gallery
             </a>
           </li>
 
           <li>
-            <a href="aboutUs.html" data-page="aboutUs.html">
+            <a
+              href="aboutUs.html"
+              data-page="aboutUs.html"
+            >
               About Us
             </a>
           </li>
@@ -105,7 +353,7 @@
     </nav>
 
     <main id="main-content">
-      <!-- Hero -->
+      <!-- Hero section -->
       <header class="hero">
         <div class="wrap hero-grid">
           <div class="hero-copy">
@@ -115,27 +363,38 @@
 
             <h1>
               Where ideas
-              <span class="gradient-text">transform the future</span>
+              <span class="gradient-text">
+                transform the future
+              </span>
             </h1>
 
             <p class="lede">
-              Welcome to the virtual home of Beacon Innovation Hub. This
-              platform keeps our community informed about announcements,
-              opportunities, upcoming events, completed activities, technology
-              projects, engineering articles and summit highlights.
+              Welcome to the virtual home of Beacon Innovation Hub.
+              Stay informed about announcements, opportunities, upcoming
+              events, completed activities, technology projects, engineering
+              articles and summit highlights.
             </p>
 
             <div class="hero-actions">
-              <a class="btn btn-primary" href="#latest">
-                View highlights
+              <a
+                class="btn btn-primary"
+                href="#latest-updates"
+              >
+                View latest highlights
               </a>
 
-              <a class="btn btn-secondary" href="events/index.html">
+              <a
+                class="btn btn-secondary"
+                href="events/index.html"
+              >
                 Upcoming events
               </a>
             </div>
 
-            <div class="scope-strip" aria-label="Website content areas">
+            <div
+              class="scope-strip"
+              aria-label="Website content areas"
+            >
               <div class="scope-item">
                 <b>Verified updates</b>
                 <span>Announcements and progress</span>
@@ -168,31 +427,45 @@
         </div>
       </header>
 
-      <!-- Homepage highlights -->
-      <section id="latest" class="homepage-highlights">
+      <!-- Homepage highlights introduction -->
+      <section class="section-soft">
         <div class="wrap">
           <div class="section-head">
             <div>
-              <div class="eyebrow">Latest from the hub</div>
-              <h2>News, knowledge and opportunities</h2>
+              <div class="eyebrow">
+                Latest from the hub
+              </div>
+
+              <h2>
+                News, knowledge and opportunities
+              </h2>
             </div>
 
             <p>
-              Explore the most recent announcements, events and articles
-              published by Beacon Innovation Hub.
+              Explore the latest announcements, upcoming events and
+              technology articles published by Beacon Innovation Hub.
             </p>
           </div>
 
           <div class="highlight-navigation">
-            <a class="highlight-link" href="#latest-updates">
+            <a
+              class="highlight-link"
+              href="#latest-updates"
+            >
               Latest updates
             </a>
 
-            <a class="highlight-link" href="#upcoming-events">
+            <a
+              class="highlight-link"
+              href="#upcoming-events"
+            >
               Upcoming events
             </a>
 
-            <a class="highlight-link" href="#latest-articles">
+            <a
+              class="highlight-link"
+              href="#latest-articles"
+            >
               Recent articles
             </a>
           </div>
@@ -204,7 +477,10 @@
         <div class="wrap">
           <div class="section-head">
             <div>
-              <div class="eyebrow">Announcements</div>
+              <div class="eyebrow">
+                Announcements
+              </div>
+
               <h2>Latest updates</h2>
             </div>
 
@@ -216,7 +492,10 @@
             </a>
           </div>
 
-          <div class="grid grid-3" id="home-updates">
+          <div
+            class="grid grid-3"
+            id="home-updates"
+          >
             <div class="content-loading">
               <span class="loading-spinner"></span>
               <p>Loading the latest updates...</p>
@@ -226,12 +505,20 @@
       </section>
 
       <!-- Upcoming events -->
-      <section id="upcoming-events" class="section-soft">
+      <section
+        id="upcoming-events"
+        class="section-soft"
+      >
         <div class="wrap">
           <div class="section-head">
             <div>
-              <div class="eyebrow">Upcoming</div>
-              <h2>Events and community sessions</h2>
+              <div class="eyebrow">
+                Upcoming
+              </div>
+
+              <h2>
+                Events and community sessions
+              </h2>
             </div>
 
             <a
@@ -256,8 +543,13 @@
         <div class="wrap">
           <div class="section-head">
             <div>
-              <div class="eyebrow">Knowledge and reflection</div>
-              <h2>Latest articles and summit reviews</h2>
+              <div class="eyebrow">
+                Knowledge and reflection
+              </div>
+
+              <h2>
+                Latest articles and summit reviews
+              </h2>
             </div>
 
             <a
@@ -268,7 +560,10 @@
             </a>
           </div>
 
-          <div class="grid grid-3" id="home-articles">
+          <div
+            class="grid grid-3"
+            id="home-articles"
+          >
             <div class="content-loading">
               <span class="loading-spinner"></span>
               <p>Loading the latest articles...</p>
@@ -277,27 +572,35 @@
         </div>
       </section>
 
-      <!-- Platform purpose -->
+      <!-- Purpose -->
       <section id="about" class="section-soft">
         <div class="wrap">
           <div class="section-head">
             <div>
-              <div class="eyebrow">Communication</div>
+              <div class="eyebrow">
+                Communication
+              </div>
+
               <h2>
                 Everything published here supports the hub’s mission
               </h2>
             </div>
 
             <p>
-              The platform helps the Beacon Innovation Hub community remain
-              informed, participate in events and learn from practical
-              technology and innovation projects.
+              This platform helps the Beacon Innovation Hub community
+              stay informed, participate in events and learn from
+              practical technology and innovation projects.
             </p>
           </div>
 
           <div class="channel-grid">
             <article class="channel-card">
-              <div class="channel-icon" aria-hidden="true">●</div>
+              <div
+                class="channel-icon"
+                aria-hidden="true"
+              >
+                ●
+              </div>
 
               <h3>Official updates</h3>
 
@@ -312,14 +615,18 @@
             </article>
 
             <article class="channel-card">
-              <div class="channel-icon" aria-hidden="true">◫</div>
+              <div
+                class="channel-icon"
+                aria-hidden="true"
+              >
+                ◫
+              </div>
 
               <h3>Events and summits</h3>
 
               <p>
                 Upcoming event details, registration information and
-                structured reviews of summits, workshops and technical
-                sessions.
+                reviews of workshops, summits and technical sessions.
               </p>
 
               <a href="events/index.html">
@@ -328,13 +635,18 @@
             </article>
 
             <article class="channel-card">
-              <div class="channel-icon" aria-hidden="true">&lt;/&gt;</div>
+              <div
+                class="channel-icon"
+                aria-hidden="true"
+              >
+                &lt;/&gt;
+              </div>
 
               <h3>Technology insights</h3>
 
               <p>
-                Practical articles, project insights, photographs, useful
-                resources and embedded educational videos.
+                Practical articles, project insights, useful resources,
+                photographs and educational videos.
               </p>
 
               <a href="articles/index.html">
@@ -351,14 +663,18 @@
       <div class="wrap">
         <div class="footer-grid">
           <div>
-            <a class="brand footer-brand" href="index.html">
+            <a
+              class="brand footer-brand"
+              href="index.html"
+            >
               <img src="beacon-mark.webp" alt="" />
               <span>Beacon Innovation Hub</span>
             </a>
 
             <p style="margin-top: 14px; max-width: 360px">
-              The official platform for verified hub updates, events,
-              technology articles, summit reviews and visual highlights.
+              The official platform for verified hub updates,
+              events, technology articles, summit reviews and
+              visual highlights.
             </p>
           </div>
 
@@ -367,11 +683,15 @@
 
             <ul>
               <li>
-                <a href="updates/index.html">Official updates</a>
+                <a href="updates/index.html">
+                  Official updates
+                </a>
               </li>
 
               <li>
-                <a href="events/index.html">Upcoming events</a>
+                <a href="events/index.html">
+                  Upcoming events
+                </a>
               </li>
 
               <li>
@@ -387,11 +707,15 @@
 
             <ul>
               <li>
-                <a href="gallery/index.html">Photo gallery</a>
+                <a href="gallery/index.html">
+                  Photo gallery
+                </a>
               </li>
 
               <li>
-                <a href="articles/index.html">Video posts</a>
+                <a href="articles/index.html">
+                  Video posts
+                </a>
               </li>
             </ul>
           </div>
@@ -401,11 +725,15 @@
 
             <ul>
               <li>
-                <a href="#about">About the platform</a>
+                <a href="#about">
+                  About the platform
+                </a>
               </li>
 
               <li>
-                <a href="#latest">Latest publications</a>
+                <a href="#latest-updates">
+                  Latest publications
+                </a>
               </li>
             </ul>
           </div>
@@ -413,15 +741,18 @@
 
         <div class="footer-bottom">
           <span>
-            © <span data-year>2026</span> Beacon Innovation Hub
+            © <span data-year>2026</span>
+            Beacon Innovation Hub
           </span>
 
-          <span>Where ideas transform the future</span>
+          <span>
+            Where ideas transform the future
+          </span>
         </div>
       </div>
     </footer>
 
-    <!-- Supabase -->
+    <!-- Supabase library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Website scripts -->
@@ -429,154 +760,311 @@
     <script src="js/store.js"></script>
     <script src="js/main.js"></script>
 
-    <!-- Homepage controls -->
     <script>
-      document.addEventListener("DOMContentLoaded", async function () {
+      document.addEventListener("DOMContentLoaded", function () {
+        initialiseMobileNavigation();
+        updateFooterYear();
+        loadHomepageContent();
+      });
+
+      function initialiseMobileNavigation() {
         const burger = document.querySelector(".nav-burger");
-        const navLinks = document.querySelector(".nav-links");
+        const navigation = document.querySelector(".nav-links");
 
-        /*
-         * Mobile navigation
-         */
-        if (burger && navLinks) {
-          const closeNavigation = function () {
-            navLinks.classList.remove("nav-open");
-            burger.classList.remove("is-active");
-            burger.setAttribute("aria-expanded", "false");
-            burger.setAttribute("aria-label", "Open navigation menu");
-            document.body.classList.remove("menu-open");
-          };
+        if (!burger || !navigation) {
+          return;
+        }
 
-          burger.addEventListener("click", function () {
-            const isOpen = navLinks.classList.toggle("nav-open");
+        function closeNavigation() {
+          navigation.classList.remove("nav-open");
+          burger.classList.remove("is-active");
+          burger.setAttribute("aria-expanded", "false");
+          burger.setAttribute(
+            "aria-label",
+            "Open navigation menu"
+          );
 
-            burger.classList.toggle("is-active", isOpen);
-            burger.setAttribute("aria-expanded", String(isOpen));
-            burger.setAttribute(
-              "aria-label",
-              isOpen ? "Close navigation menu" : "Open navigation menu"
+          document.body.classList.remove("menu-open");
+        }
+
+        burger.addEventListener("click", function () {
+          const menuIsOpen =
+            navigation.classList.toggle("nav-open");
+
+          burger.classList.toggle(
+            "is-active",
+            menuIsOpen
+          );
+
+          burger.setAttribute(
+            "aria-expanded",
+            String(menuIsOpen)
+          );
+
+          burger.setAttribute(
+            "aria-label",
+            menuIsOpen
+              ? "Close navigation menu"
+              : "Open navigation menu"
+          );
+
+          document.body.classList.toggle(
+            "menu-open",
+            menuIsOpen
+          );
+        });
+
+        navigation
+          .querySelectorAll("a")
+          .forEach(function (link) {
+            link.addEventListener(
+              "click",
+              closeNavigation
             );
-
-            document.body.classList.toggle("menu-open", isOpen);
           });
 
-          navLinks.querySelectorAll("a").forEach(function (link) {
-            link.addEventListener("click", closeNavigation);
-          });
-
-          document.addEventListener("keydown", function (event) {
-            if (event.key === "Escape") {
-              closeNavigation();
-            }
-          });
-
-          document.addEventListener("click", function (event) {
-            const clickedInsideNavigation =
+        document.addEventListener(
+          "click",
+          function (event) {
+            const clickedInsideMenu =
               burger.contains(event.target) ||
-              navLinks.contains(event.target);
+              navigation.contains(event.target);
 
             if (
-              navLinks.classList.contains("nav-open") &&
-              !clickedInsideNavigation
+              navigation.classList.contains("nav-open") &&
+              !clickedInsideMenu
             ) {
               closeNavigation();
             }
-          });
+          }
+        );
 
-          window.addEventListener("resize", function () {
+        document.addEventListener(
+          "keydown",
+          function (event) {
+            if (event.key === "Escape") {
+              closeNavigation();
+            }
+          }
+        );
+
+        window.addEventListener(
+          "resize",
+          function () {
             if (window.innerWidth > 820) {
               closeNavigation();
             }
-          });
-        }
+          }
+        );
+      }
 
-        /*
-         * Dynamic homepage highlights
-         */
+      function updateFooterYear() {
+        document
+          .querySelectorAll("[data-year]")
+          .forEach(function (element) {
+            element.textContent =
+              new Date().getFullYear();
+          });
+      }
+
+      async function loadHomepageContent() {
+        await Promise.allSettled([
+          loadHomepageUpdates(),
+          loadHomepageEvents(),
+          loadHomepageArticles()
+        ]);
+      }
+
+      async function loadHomepageUpdates() {
         try {
-          if (typeof renderUpdates === "function") {
-            await renderUpdates("home-updates", 3);
-          } else {
-            showHomepageError(
-              "home-updates",
-              "Updates are temporarily unavailable.",
-              "updates/index.html",
-              "View all updates"
+          if (typeof window.renderUpdates !== "function") {
+            throw new Error(
+              "renderUpdates() is not available."
             );
           }
-        } catch (error) {
-          console.error("Could not load homepage updates:", error);
 
-          showHomepageError(
+          await window.renderUpdates(
+            "home-updates",
+            3
+          );
+
+          verifyRenderedContent(
+            "home-updates",
+            "No updates have been published yet.",
+            "updates/index.html",
+            "View all updates"
+          );
+        } catch (error) {
+          console.error(
+            "Homepage updates error:",
+            error
+          );
+
+          showContentError(
             "home-updates",
             "The latest updates could not be loaded.",
             "updates/index.html",
             "View all updates"
           );
         }
+      }
+
+      async function loadHomepageEvents() {
+        const container =
+          document.getElementById("home-events");
 
         try {
-          if (typeof renderEvents === "function") {
-            await renderEvents("home-events", {
-              home: true,
-              limit: 2
-            });
-          } else {
-            showHomepageError(
-              "home-events",
-              "Events are temporarily unavailable.",
-              "events/index.html",
-              "View all events"
+          if (typeof window.renderEvents !== "function") {
+            throw new Error(
+              "renderEvents() is not available."
             );
           }
-        } catch (error) {
-          console.error("Could not load homepage events:", error);
 
-          showHomepageError(
+          /*
+           * First try the object format used by the homepage.
+           */
+          await window.renderEvents(
+            "home-events",
+            {
+              home: true,
+              limit: 3,
+              upcomingOnly: true
+            }
+          );
+
+          /*
+           * Some older renderEvents functions expect a number
+           * instead of an options object. Retry using 3 when
+           * nothing was rendered.
+           */
+          if (
+            container &&
+            containerHasNoPublishedContent(container)
+          ) {
+            container.innerHTML = "";
+
+            await window.renderEvents(
+              "home-events",
+              3
+            );
+          }
+
+          verifyRenderedContent(
+            "home-events",
+            "No upcoming events are currently scheduled.",
+            "events/index.html",
+            "View all events"
+          );
+        } catch (error) {
+          console.error(
+            "Homepage events error:",
+            error
+          );
+
+          showContentError(
             "home-events",
             "Upcoming events could not be loaded.",
             "events/index.html",
             "View all events"
           );
         }
+      }
 
+      async function loadHomepageArticles() {
         try {
-          if (typeof renderArticles === "function") {
-            await renderArticles("home-articles", "", 3);
-          } else {
-            showHomepageError(
-              "home-articles",
-              "Articles are temporarily unavailable.",
-              "articles/index.html",
-              "View all articles"
+          if (typeof window.renderArticles !== "function") {
+            throw new Error(
+              "renderArticles() is not available."
             );
           }
-        } catch (error) {
-          console.error("Could not load homepage articles:", error);
 
-          showHomepageError(
+          await window.renderArticles(
+            "home-articles",
+            "",
+            3
+          );
+
+          verifyRenderedContent(
+            "home-articles",
+            "No articles have been published yet.",
+            "articles/index.html",
+            "View all articles"
+          );
+        } catch (error) {
+          console.error(
+            "Homepage articles error:",
+            error
+          );
+
+          showContentError(
             "home-articles",
             "The latest articles could not be loaded.",
             "articles/index.html",
             "View all articles"
           );
         }
+      }
 
-        /*
-         * Current footer year
-         */
-        document.querySelectorAll("[data-year]").forEach(function (element) {
-          element.textContent = new Date().getFullYear();
-        });
-      });
+      function containerHasNoPublishedContent(container) {
+        if (!container) {
+          return true;
+        }
 
-      function showHomepageError(
+        const content = container.innerHTML.trim();
+
+        if (!content) {
+          return true;
+        }
+
+        const hasLoadingState =
+          container.querySelector(".content-loading");
+
+        const hasActualElement =
+          container.querySelector(
+            "article, .card, .event-card, .event-item, .post-card, li"
+          );
+
+        return Boolean(hasLoadingState) && !hasActualElement;
+      }
+
+      function verifyRenderedContent(
         containerId,
         message,
         link,
         linkText
       ) {
-        const container = document.getElementById(containerId);
+        const container =
+          document.getElementById(containerId);
+
+        if (!container) {
+          return;
+        }
+
+        const loadingState =
+          container.querySelector(".content-loading");
+
+        if (loadingState) {
+          loadingState.remove();
+        }
+
+        if (!container.innerHTML.trim()) {
+          showEmptyState(
+            containerId,
+            message,
+            link,
+            linkText
+          );
+        }
+      }
+
+      function showEmptyState(
+        containerId,
+        message,
+        link,
+        linkText
+      ) {
+        const container =
+          document.getElementById(containerId);
 
         if (!container) {
           return;
@@ -584,13 +1072,64 @@
 
         container.innerHTML = `
           <div class="empty-state">
-            <h3>Nothing to display here yet</h3>
-            <p>${message}</p>
-            <a class="btn btn-secondary btn-sm" href="${link}">
-              ${linkText} →
+            <h3>Nothing published here yet</h3>
+            <p>${escapeHomepageText(message)}</p>
+            <a
+              class="btn btn-secondary btn-sm"
+              href="${escapeHomepageAttribute(link)}"
+            >
+              ${escapeHomepageText(linkText)} →
             </a>
           </div>
         `;
+      }
+
+      function showContentError(
+        containerId,
+        message,
+        link,
+        linkText
+      ) {
+        const container =
+          document.getElementById(containerId);
+
+        if (!container) {
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="content-error">
+            <h3>Content temporarily unavailable</h3>
+            <p>${escapeHomepageText(message)}</p>
+            <a
+              class="btn btn-secondary btn-sm"
+              href="${escapeHomepageAttribute(link)}"
+            >
+              ${escapeHomepageText(linkText)} →
+            </a>
+          </div>
+        `;
+      }
+
+      function escapeHomepageText(value) {
+        return String(value).replace(
+          /[&<>"']/g,
+          function (character) {
+            const characters = {
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;"
+            };
+
+            return characters[character];
+          }
+        );
+      }
+
+      function escapeHomepageAttribute(value) {
+        return escapeHomepageText(value);
       }
     </script>
   </body>
