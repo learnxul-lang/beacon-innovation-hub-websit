@@ -1,33 +1,48 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-DNH00V8H4V"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-DNH00V8H4V"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+      function gtag() {
+        window.dataLayer.push(arguments);
+      }
 
-  gtag('config', 'G-DNH00V8H4V');
-</script>
+      gtag("js", new Date());
+      gtag("config", "G-DNH00V8H4V");
+    </script>
 
-
-    
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
     <title>Beacon Innovation Hub — Where Ideas Transform the Future</title>
-    <meta name="google-site-verification" content="VdhI2R-JLoneeFlipA4s5wTVESRox9cj4NUJUPBO3sk" />
+
+    <meta
+      name="google-site-verification"
+      content="VdhI2R-JLoneeFlipA4s5wTVESRox9cj4NUJUPBO3sk"
+    />
+
     <meta
       name="description"
       content="Official Beacon Innovation Hub updates, events, software engineering articles and summit reviews."
     />
 
     <link rel="icon" type="image/webp" href="beacon-mark.webp" />
-   <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <!-- Navigation -->
     <nav class="site-nav" aria-label="Primary navigation">
       <div class="wrap nav-inner">
         <a
@@ -38,219 +53,545 @@
           <img src="beacon-mark.webp" alt="" />
           <span>Beacon Innovation Hub</span>
         </a>
+
         <button
           class="nav-burger"
           type="button"
-          aria-label="Open navigation"
+          aria-label="Open navigation menu"
           aria-expanded="false"
+          aria-controls="primary-navigation"
         >
-          ☰
+          <span class="burger-line"></span>
+          <span class="burger-line"></span>
+          <span class="burger-line"></span>
         </button>
-        <ul class="nav-links">
-          <li><a href="index.html" data-page="index.html">Home</a></li>
-          <li><a href="updates/index.html" data-page="updates/index.html">Updates</a></li>
-          <li><a href="events/index.html" data-page="events/index.html">Events</a></li>
+
+        <ul class="nav-links" id="primary-navigation">
           <li>
-            <a href="articles/index.html" data-page="articles/index.html"
-              >Articles &amp; Reviews</a
-            >
+            <a href="index.html" data-page="index.html">Home</a>
           </li>
-          <li><a href="gallery/index.html" data-page="gallery/index.html">Gallery</a></li>
-          <li><a href="aboutUs.html" data-page="aboutUs.html">About Us</a></li>
+
+          <li>
+            <a href="updates/index.html" data-page="updates/index.html">
+              Updates
+            </a>
+          </li>
+
+          <li>
+            <a href="events/index.html" data-page="events/index.html">
+              Events
+            </a>
+          </li>
+
+          <li>
+            <a href="articles/index.html" data-page="articles/index.html">
+              Articles &amp; Reviews
+            </a>
+          </li>
+
+          <li>
+            <a href="gallery/index.html" data-page="gallery/index.html">
+              Gallery
+            </a>
+          </li>
+
+          <li>
+            <a href="aboutUs.html" data-page="aboutUs.html">
+              About Us
+            </a>
+          </li>
         </ul>
       </div>
     </nav>
+
     <main id="main-content">
+      <!-- Hero -->
       <header class="hero">
         <div class="wrap hero-grid">
           <div class="hero-copy">
-            <div class="eyebrow">Official Beacon Innovation Hub platform</div>
+            <div class="eyebrow">
+              Official Beacon Innovation Hub platform
+            </div>
+
             <h1>
               Where ideas
               <span class="gradient-text">transform the future</span>
             </h1>
+
             <p class="lede">
-              Welcome to our Beacon Innovation Hub virtual home,
-              we designed and built this environment with the aim
-              to keep you updated with the Hub's announcements,
-              upcoming and past events, industry-focused software 
-              engineering knowledge and all summits alongside our media activities
+              Welcome to the virtual home of Beacon Innovation Hub. This
+              platform keeps our community informed about announcements,
+              opportunities, upcoming events, completed activities, technology
+              projects, engineering articles and summit highlights.
             </p>
+
             <div class="hero-actions">
-              <a class="btn btn-primary" href="updates/index.html"
-                >Latest updates</a
-              >
-              <a class="btn btn-secondary" href="events/index.html"
-                >Upcoming events</a
-              >
+              <a class="btn btn-primary" href="#latest">
+                View highlights
+              </a>
+
+              <a class="btn btn-secondary" href="events/index.html">
+                Upcoming events
+              </a>
             </div>
+
             <div class="scope-strip" aria-label="Website content areas">
               <div class="scope-item">
-                <b>Verified updates</b><span>Announcements and progress</span>
+                <b>Verified updates</b>
+                <span>Announcements and progress</span>
               </div>
+
               <div class="scope-item">
-                <b>Events</b><span>Dates, details and recaps</span>
+                <b>Events</b>
+                <span>Dates, details and recaps</span>
               </div>
+
               <div class="scope-item">
-                <b>Engineering insights</b
-                ><span>Articles and summit reviews</span>
+                <b>Engineering insights</b>
+                <span>Articles and summit reviews</span>
               </div>
             </div>
           </div>
+
           <div class="hero-visual">
             <div class="logo-panel">
               <img
                 src="beacon-brand.png"
-                alt="Beacon Innovation Hub — Where Ideas Transform The Future"
+                alt="Beacon Innovation Hub — Where Ideas Transform the Future"
               />
             </div>
-            <div class="status-pill">Official communication channel</div>
+
+            <div class="status-pill">
+              Official communication channel
+            </div>
           </div>
         </div>
       </header>
 
-      <section id="about" class="section-soft">
+      <!-- Homepage highlights -->
+      <section id="latest" class="homepage-highlights">
         <div class="wrap">
           <div class="section-head">
             <div>
-              <div class="eyebrow">Communication</div>
-              <h2>Everything published here serves the hub’s mission</h2>
+              <div class="eyebrow">Latest from the hub</div>
+              <h2>News, knowledge and opportunities</h2>
             </div>
+
             <p>
-              The site is intentionally limited to information that helps the
-              Beacon Innovation Hub community stay informed, participate in
-              events and learn from practical software engineering work.
+              Explore the most recent announcements, events and articles
+              published by Beacon Innovation Hub.
             </p>
           </div>
-          <div class="channel-grid">
-            <article class="channel-card">
-              <div class="channel-icon">●</div>
-              <h3>Official updates</h3>
-              <p>
-                Announcements, opportunities, project milestones, partnerships
-                and important notices published by the hub administration.
-              </p>
-              <a href="updates/index.html">Read updates →</a>
-            </article>
-            <article class="channel-card">
-              <div class="channel-icon">◫</div>
-              <h3>Events and summits</h3>
-              <p>
-                Upcoming event information, registration links and structured
-                reviews of summits, workshops and technical sessions.
-              </p>
-              <a href="events/index.html">Open event calendar →</a>
-            </article>
-            <article class="channel-card">
-              <div class="channel-icon">&lt;/&gt;</div>
-              <h3>Software engineering</h3>
-              <p>
-                Practical articles with photographs, hashtags, useful links and
-                embedded YouTube videos where they add learning value.
-              </p>
-              <a href="articles/index.html">Explore articles →</a>
-            </article>
+
+          <div class="highlight-navigation">
+            <a class="highlight-link" href="#latest-updates">
+              Latest updates
+            </a>
+
+            <a class="highlight-link" href="#upcoming-events">
+              Upcoming events
+            </a>
+
+            <a class="highlight-link" href="#latest-articles">
+              Recent articles
+            </a>
           </div>
         </div>
       </section>
 
-      <section id="latest">
+      <!-- Latest updates -->
+      <section id="latest-updates">
         <div class="wrap">
           <div class="section-head">
             <div>
-              <div class="eyebrow">Latest publications</div>
-              <h2>Updates from the hub</h2>
+              <div class="eyebrow">Announcements</div>
+              <h2>Latest updates</h2>
             </div>
-            <a class="btn btn-secondary btn-sm" href="updates/index.html"
-              >All updates →</a
+
+            <a
+              class="btn btn-secondary btn-sm"
+              href="updates/index.html"
             >
+              View all updates →
+            </a>
           </div>
-          <div class="grid grid-3" id="home-updates"></div>
+
+          <div class="grid grid-3" id="home-updates">
+            <div class="content-loading">
+              <span class="loading-spinner"></span>
+              <p>Loading the latest updates...</p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="section-soft">
+      <!-- Upcoming events -->
+      <section id="upcoming-events" class="section-soft">
         <div class="wrap">
           <div class="section-head">
             <div>
               <div class="eyebrow">Upcoming</div>
               <h2>Events and community sessions</h2>
             </div>
-            <a class="btn btn-secondary btn-sm" href="events/index.html"
-              >Full calendar →</a
+
+            <a
+              class="btn btn-secondary btn-sm"
+              href="events/index.html"
             >
+              View full calendar →
+            </a>
           </div>
-          <div id="home-events"></div>
+
+          <div id="home-events">
+            <div class="content-loading">
+              <span class="loading-spinner"></span>
+              <p>Loading upcoming events...</p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section>
+      <!-- Latest articles -->
+      <section id="latest-articles">
         <div class="wrap">
           <div class="section-head">
             <div>
               <div class="eyebrow">Knowledge and reflection</div>
-              <h2>Software engineering articles and summit reviews</h2>
+              <h2>Latest articles and summit reviews</h2>
             </div>
-            <a class="btn btn-secondary btn-sm" href="articles/index.html"
-              >All writing →</a
+
+            <a
+              class="btn btn-secondary btn-sm"
+              href="articles/index.html"
             >
+              View all articles →
+            </a>
           </div>
-          <div class="grid grid-3" id="home-articles"></div>
+
+          <div class="grid grid-3" id="home-articles">
+            <div class="content-loading">
+              <span class="loading-spinner"></span>
+              <p>Loading the latest articles...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Platform purpose -->
+      <section id="about" class="section-soft">
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Communication</div>
+              <h2>
+                Everything published here supports the hub’s mission
+              </h2>
+            </div>
+
+            <p>
+              The platform helps the Beacon Innovation Hub community remain
+              informed, participate in events and learn from practical
+              technology and innovation projects.
+            </p>
+          </div>
+
+          <div class="channel-grid">
+            <article class="channel-card">
+              <div class="channel-icon" aria-hidden="true">●</div>
+
+              <h3>Official updates</h3>
+
+              <p>
+                Announcements, opportunities, project milestones,
+                partnerships and important notices published by the hub.
+              </p>
+
+              <a href="updates/index.html">
+                Read updates →
+              </a>
+            </article>
+
+            <article class="channel-card">
+              <div class="channel-icon" aria-hidden="true">◫</div>
+
+              <h3>Events and summits</h3>
+
+              <p>
+                Upcoming event details, registration information and
+                structured reviews of summits, workshops and technical
+                sessions.
+              </p>
+
+              <a href="events/index.html">
+                Open event calendar →
+              </a>
+            </article>
+
+            <article class="channel-card">
+              <div class="channel-icon" aria-hidden="true">&lt;/&gt;</div>
+
+              <h3>Technology insights</h3>
+
+              <p>
+                Practical articles, project insights, photographs, useful
+                resources and embedded educational videos.
+              </p>
+
+              <a href="articles/index.html">
+                Explore articles →
+              </a>
+            </article>
+          </div>
         </div>
       </section>
     </main>
+
+    <!-- Footer -->
     <footer>
       <div class="wrap">
         <div class="footer-grid">
           <div>
-            <a class="brand footer-brand" href="index.html"
-              ><img src="beacon-mark.webp" alt="" /><span
-                >Beacon Innovation Hub</span
-              ></a
-            >
+            <a class="brand footer-brand" href="index.html">
+              <img src="beacon-mark.webp" alt="" />
+              <span>Beacon Innovation Hub</span>
+            </a>
+
             <p style="margin-top: 14px; max-width: 360px">
-              The official platform for verified hub updates, upcoming events,
-              software engineering articles, summit reviews and visual
-              highlights.
+              The official platform for verified hub updates, events,
+              technology articles, summit reviews and visual highlights.
             </p>
           </div>
+
           <div>
             <h4>Explore</h4>
+
             <ul>
-              <li><a href="updates/index.html">Official updates</a></li>
-              <li><a href="events/index.html">Upcoming events</a></li>
-              <li><a href="articles/index.html">Articles &amp; reviews</a></li>
+              <li>
+                <a href="updates/index.html">Official updates</a>
+              </li>
+
+              <li>
+                <a href="events/index.html">Upcoming events</a>
+              </li>
+
+              <li>
+                <a href="articles/index.html">
+                  Articles &amp; reviews
+                </a>
+              </li>
             </ul>
           </div>
+
           <div>
             <h4>Media</h4>
+
             <ul>
-              <li><a href="gallery/index.html">Photo gallery</a></li>
-              <li><a href="articles/index.html">Video posts</a></li>
+              <li>
+                <a href="gallery/index.html">Photo gallery</a>
+              </li>
+
+              <li>
+                <a href="articles/index.html">Video posts</a>
+              </li>
             </ul>
           </div>
+
           <div>
             <h4>Purpose</h4>
+
             <ul>
-              <li><a href="index.html#about">About the platform</a></li>
-              <li><a href="index.html#latest">Latest publications</a></li>
+              <li>
+                <a href="#about">About the platform</a>
+              </li>
+
+              <li>
+                <a href="#latest">Latest publications</a>
+              </li>
             </ul>
           </div>
         </div>
+
         <div class="footer-bottom">
-          <span>© <span data-year>2026</span> Beacon Innovation Hub</span
-          ><span>Where ideas transform the future</span>
+          <span>
+            © <span data-year>2026</span> Beacon Innovation Hub
+          </span>
+
+          <span>Where ideas transform the future</span>
         </div>
       </div>
     </footer>
+
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Website scripts -->
     <script src="js/supabase-config.js"></script>
     <script src="js/store.js"></script>
     <script src="js/main.js"></script>
+
+    <!-- Homepage controls -->
     <script>
-      renderUpdates("home-updates", 3);
-      renderEvents("home-events", { home: true, limit: 2 });
-      renderArticles("home-articles", "", 3);
+      document.addEventListener("DOMContentLoaded", async function () {
+        const burger = document.querySelector(".nav-burger");
+        const navLinks = document.querySelector(".nav-links");
+
+        /*
+         * Mobile navigation
+         */
+        if (burger && navLinks) {
+          const closeNavigation = function () {
+            navLinks.classList.remove("nav-open");
+            burger.classList.remove("is-active");
+            burger.setAttribute("aria-expanded", "false");
+            burger.setAttribute("aria-label", "Open navigation menu");
+            document.body.classList.remove("menu-open");
+          };
+
+          burger.addEventListener("click", function () {
+            const isOpen = navLinks.classList.toggle("nav-open");
+
+            burger.classList.toggle("is-active", isOpen);
+            burger.setAttribute("aria-expanded", String(isOpen));
+            burger.setAttribute(
+              "aria-label",
+              isOpen ? "Close navigation menu" : "Open navigation menu"
+            );
+
+            document.body.classList.toggle("menu-open", isOpen);
+          });
+
+          navLinks.querySelectorAll("a").forEach(function (link) {
+            link.addEventListener("click", closeNavigation);
+          });
+
+          document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+              closeNavigation();
+            }
+          });
+
+          document.addEventListener("click", function (event) {
+            const clickedInsideNavigation =
+              burger.contains(event.target) ||
+              navLinks.contains(event.target);
+
+            if (
+              navLinks.classList.contains("nav-open") &&
+              !clickedInsideNavigation
+            ) {
+              closeNavigation();
+            }
+          });
+
+          window.addEventListener("resize", function () {
+            if (window.innerWidth > 820) {
+              closeNavigation();
+            }
+          });
+        }
+
+        /*
+         * Dynamic homepage highlights
+         */
+        try {
+          if (typeof renderUpdates === "function") {
+            await renderUpdates("home-updates", 3);
+          } else {
+            showHomepageError(
+              "home-updates",
+              "Updates are temporarily unavailable.",
+              "updates/index.html",
+              "View all updates"
+            );
+          }
+        } catch (error) {
+          console.error("Could not load homepage updates:", error);
+
+          showHomepageError(
+            "home-updates",
+            "The latest updates could not be loaded.",
+            "updates/index.html",
+            "View all updates"
+          );
+        }
+
+        try {
+          if (typeof renderEvents === "function") {
+            await renderEvents("home-events", {
+              home: true,
+              limit: 2
+            });
+          } else {
+            showHomepageError(
+              "home-events",
+              "Events are temporarily unavailable.",
+              "events/index.html",
+              "View all events"
+            );
+          }
+        } catch (error) {
+          console.error("Could not load homepage events:", error);
+
+          showHomepageError(
+            "home-events",
+            "Upcoming events could not be loaded.",
+            "events/index.html",
+            "View all events"
+          );
+        }
+
+        try {
+          if (typeof renderArticles === "function") {
+            await renderArticles("home-articles", "", 3);
+          } else {
+            showHomepageError(
+              "home-articles",
+              "Articles are temporarily unavailable.",
+              "articles/index.html",
+              "View all articles"
+            );
+          }
+        } catch (error) {
+          console.error("Could not load homepage articles:", error);
+
+          showHomepageError(
+            "home-articles",
+            "The latest articles could not be loaded.",
+            "articles/index.html",
+            "View all articles"
+          );
+        }
+
+        /*
+         * Current footer year
+         */
+        document.querySelectorAll("[data-year]").forEach(function (element) {
+          element.textContent = new Date().getFullYear();
+        });
+      });
+
+      function showHomepageError(
+        containerId,
+        message,
+        link,
+        linkText
+      ) {
+        const container = document.getElementById(containerId);
+
+        if (!container) {
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="empty-state">
+            <h3>Nothing to display here yet</h3>
+            <p>${message}</p>
+            <a class="btn btn-secondary btn-sm" href="${link}">
+              ${linkText} →
+            </a>
+          </div>
+        `;
+      }
     </script>
   </body>
 </html>
