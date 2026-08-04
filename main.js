@@ -912,3 +912,8 @@ document.addEventListener(
   'DOMContentLoaded',
   initNav
 );
+
+
+window.renderUpdates = renderUpdates;
+window.renderEvents = renderEvents;
+window.renderArticles = renderArticles;
