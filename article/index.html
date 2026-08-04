@@ -1,36 +1,96 @@
 <!doctype html>
 <html lang="en">
   <head>
-
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-DNH00V8H4V"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-DNH00V8H4V"
+    ></script>
 
-  gtag('config', 'G-DNH00V8H4V');
-</script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
 
-    
+      function gtag() {
+        window.dataLayer.push(arguments);
+      }
+
+      gtag("js", new Date());
+      gtag("config", "G-DNH00V8H4V");
+    </script>
+
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
 
     <title>Post — Beacon Innovation Hub</title>
 
     <meta
       name="description"
-      content="Read an official Beacon Innovation Hub post."
+      content="Read an official publication from Beacon Innovation Hub."
     />
 
-    <link rel="icon" type="image/webp" href="../beacon-mark.webp" />
-    <link rel="stylesheet" href="../style.css?v=5" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="Beacon Innovation Hub Publication"
+    />
+
+    <meta
+      property="og:description"
+      content="Read an official publication from Beacon Innovation Hub."
+    />
+
+    <meta property="og:type" content="article" />
+
+    <meta
+      property="og:site_name"
+      content="Beacon Innovation Hub"
+    />
+
+    <meta property="og:url" content="" />
+
+    <!-- X/Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta
+      name="twitter:title"
+      content="Beacon Innovation Hub Publication"
+    />
+
+    <meta
+      name="twitter:description"
+      content="Read an official publication from Beacon Innovation Hub."
+    />
+
+    <link
+      rel="icon"
+      type="image/webp"
+      href="../beacon-mark.webp"
+    />
+
+    <link
+      rel="stylesheet"
+      href="../style.css?v=6"
+    />
   </head>
 
-  <body>
+  <body class="post-detail-page">
     <a class="skip-link" href="#main-content">
       Skip to content
     </a>
+
+    <!-- Reading progress -->
+    <div
+      class="reading-progress"
+      aria-hidden="true"
+    >
+      <span id="reading-progress-bar"></span>
+    </div>
 
     <nav class="site-nav" aria-label="Primary navigation">
       <div class="wrap nav-inner">
@@ -47,55 +107,293 @@
           class="nav-burger"
           type="button"
           aria-label="Open navigation"
+          aria-controls="primary-navigation"
           aria-expanded="false"
         >
-          ☰
+          <span aria-hidden="true">☰</span>
         </button>
 
-        <ul class="nav-links">
+        <ul
+          class="nav-links"
+          id="primary-navigation"
+        >
           <li>
-            <a href="../" data-page="/">Home</a>
+            <a href="../" data-page="/">
+              Home
+            </a>
           </li>
 
           <li>
-            <a href="../updates/" data-page="/updates/">Updates</a>
+            <a
+              href="../updates/"
+              data-page="/updates/"
+            >
+              Updates
+            </a>
           </li>
 
           <li>
-            <a href="../events/" data-page="/events/">Events</a>
+            <a
+              href="../events/"
+              data-page="/events/"
+            >
+              Events
+            </a>
           </li>
 
           <li>
-            <a href="../articles/" data-page="/articles/" aria-current="page">
+            <a
+              href="../articles/"
+              data-page="/articles/"
+            >
               Articles &amp; Reviews
             </a>
           </li>
 
           <li>
-            <a href="../gallery/" data-page="/gallery/">Gallery</a>
+            <a
+              href="../gallery/"
+              data-page="/gallery/"
+            >
+              Gallery
+            </a>
           </li>
 
           <li>
-            <a href="../about/" data-page="/about/">About Us</a>
+            <a
+              href="../about/"
+              data-page="/about/"
+            >
+              About Us
+            </a>
           </li>
         </ul>
       </div>
     </nav>
 
     <main id="main-content">
-      <div id="post-root"></div>
+      <section class="post-page-header">
+        <div class="wrap">
+          <nav
+            class="post-breadcrumbs"
+            aria-label="Breadcrumb"
+          >
+            <a href="../">Home</a>
+
+            <span aria-hidden="true">/</span>
+
+            <a
+              id="post-breadcrumb-section"
+              href="../articles/"
+            >
+              Publications
+            </a>
+
+            <span aria-hidden="true">/</span>
+
+            <span aria-current="page">
+              Read
+            </span>
+          </nav>
+
+          <div class="post-page-heading">
+            <div>
+              <span class="post-page-eyebrow">
+                Beacon Innovation Hub
+              </span>
+
+              <h1>Official publication</h1>
+
+              <p>
+                Insights, announcements, event information and
+                ideas from the Beacon Innovation Hub community.
+              </p>
+            </div>
+
+            <a
+              class="post-header-back"
+              id="post-header-back"
+              href="../articles/"
+            >
+              <span aria-hidden="true">←</span>
+              All publications
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="post-detail-section">
+        <div class="wrap post-detail-layout">
+          <article
+            class="post-detail-card"
+            aria-live="polite"
+          >
+            <div id="post-loading-state">
+              <div class="post-loading-cover skeleton"></div>
+
+              <div class="post-loading-content">
+                <div
+                  class="skeleton skeleton-line skeleton-line-small"
+                ></div>
+
+                <div
+                  class="skeleton skeleton-line skeleton-line-title"
+                ></div>
+
+                <div
+                  class="skeleton skeleton-line skeleton-line-title-short"
+                ></div>
+
+                <div
+                  class="skeleton skeleton-line skeleton-line-meta"
+                ></div>
+
+                <div class="skeleton-paragraph">
+                  <div class="skeleton skeleton-line"></div>
+                  <div class="skeleton skeleton-line"></div>
+                  <div class="skeleton skeleton-line"></div>
+                  <div
+                    class="skeleton skeleton-line skeleton-line-short"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="post-root"></div>
+          </article>
+
+          <aside
+            class="post-detail-sidebar"
+            aria-label="Publication tools"
+          >
+            <div class="post-side-card">
+              <span class="post-side-label">
+                Publication
+              </span>
+
+              <h2>Beacon Innovation Hub</h2>
+
+              <p>
+                Follow our latest developments, opportunities,
+                events and technology insights.
+              </p>
+
+              <div class="post-share-actions">
+                <button
+                  class="post-share-button"
+                  id="share-post-button"
+                  type="button"
+                >
+                  <span aria-hidden="true">↗</span>
+                  Share publication
+                </button>
+
+                <button
+                  class="post-copy-button"
+                  id="copy-post-link"
+                  type="button"
+                >
+                  <span aria-hidden="true">⧉</span>
+                  Copy link
+                </button>
+              </div>
+
+              <p
+                class="copy-feedback"
+                id="copy-feedback"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </div>
+
+            <div class="post-side-card post-side-card-muted">
+              <span class="post-side-label">
+                Explore more
+              </span>
+
+              <ul class="post-explore-links">
+                <li>
+                  <a href="../updates/">
+                    <span>
+                      <strong>Official updates</strong>
+                      <small>News from the hub</small>
+                    </span>
+
+                    <span aria-hidden="true">→</span>
+                  </a>
+                </li>
+
+                <li>
+                  <a href="../events/">
+                    <span>
+                      <strong>Upcoming events</strong>
+                      <small>Programmes and activities</small>
+                    </span>
+
+                    <span aria-hidden="true">→</span>
+                  </a>
+                </li>
+
+                <li>
+                  <a href="../articles/">
+                    <span>
+                      <strong>Articles &amp; reviews</strong>
+                      <small>Technology and innovation</small>
+                    </span>
+
+                    <span aria-hidden="true">→</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="post-bottom-navigation">
+        <div class="wrap">
+          <div class="post-bottom-card">
+            <div>
+              <span class="post-page-eyebrow">
+                Keep exploring
+              </span>
+
+              <h2>Discover more from the hub</h2>
+
+              <p>
+                Browse the latest updates, articles, event
+                announcements and project highlights.
+              </p>
+            </div>
+
+            <a
+              class="btn btn-primary"
+              id="post-bottom-back"
+              href="../articles/"
+            >
+              View all publications
+            </a>
+          </div>
+        </div>
+      </section>
 
       <noscript>
-        <section class="wrap" style="padding: 80px 0">
-          <h1>JavaScript is required</h1>
+        <section class="wrap noscript-message">
+          <div class="empty-state">
+            <h1>JavaScript is required</h1>
 
-          <p>
-            Please enable JavaScript in your browser to view this article.
-          </p>
+            <p>
+              Please enable JavaScript in your browser to view
+              this publication.
+            </p>
 
-          <a class="btn btn-primary" href="../articles/">
-            Return to articles
-          </a>
+            <a
+              class="btn btn-primary"
+              href="../articles/"
+            >
+              Return to publications
+            </a>
+          </div>
         </section>
       </noscript>
     </main>
@@ -113,10 +411,10 @@
               <span>Beacon Innovation Hub</span>
             </a>
 
-            <p style="margin-top: 14px; max-width: 360px">
-              The official platform for verified hub updates, upcoming
-              events, software engineering articles, summit reviews and
-              visual highlights.
+            <p class="footer-description">
+              The official platform for verified hub updates,
+              upcoming events, software engineering articles,
+              summit reviews and visual highlights.
             </p>
           </div>
 
@@ -125,15 +423,21 @@
 
             <ul>
               <li>
-                <a href="../updates/">Official updates</a>
+                <a href="../updates/">
+                  Official updates
+                </a>
               </li>
 
               <li>
-                <a href="../events/">Upcoming events</a>
+                <a href="../events/">
+                  Upcoming events
+                </a>
               </li>
 
               <li>
-                <a href="../articles/">Articles &amp; reviews</a>
+                <a href="../articles/">
+                  Articles &amp; reviews
+                </a>
               </li>
             </ul>
           </div>
@@ -143,11 +447,15 @@
 
             <ul>
               <li>
-                <a href="../gallery/">Photo gallery</a>
+                <a href="../gallery/">
+                  Photo gallery
+                </a>
               </li>
 
               <li>
-                <a href="../articles/">Video posts</a>
+                <a href="../articles/">
+                  Video posts
+                </a>
               </li>
             </ul>
           </div>
@@ -157,15 +465,21 @@
 
             <ul>
               <li>
-                <a href="../#about">About the platform</a>
+                <a href="../#about">
+                  About the platform
+                </a>
               </li>
 
               <li>
-                <a href="../#latest">Latest publications</a>
+                <a href="../#latest">
+                  Latest publications
+                </a>
               </li>
 
               <li>
-                <a href="../about/">Meet the founders</a>
+                <a href="../about/">
+                  Meet the team
+                </a>
               </li>
             </ul>
           </div>
@@ -173,42 +487,407 @@
 
         <div class="footer-bottom">
           <span>
-            © <span data-year>2026</span> Beacon Innovation Hub
+            © <span data-year>2026</span>
+            Beacon Innovation Hub
           </span>
 
-          <span>Where ideas transform the future</span>
+          <span>
+            Where ideas transform the future
+          </span>
         </div>
       </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase-config.js?v=5"></script>
-    <script src="../store.js?v=5"></script>
-    <script src="../main.js?v=5"></script>
+    <script src="../supabase-config.js?v=6"></script>
+    <script src="../store.js?v=6"></script>
+    <script src="../main.js?v=6"></script>
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const postRoot = document.getElementById("post-root");
+        const loadingState = document.getElementById(
+          "post-loading-state"
+        );
 
-        if (typeof renderPostDetail === "function") {
-          renderPostDetail("post-root");
-          return;
+        const shareButton = document.getElementById(
+          "share-post-button"
+        );
+
+        const copyButton = document.getElementById(
+          "copy-post-link"
+        );
+
+        const copyFeedback = document.getElementById(
+          "copy-feedback"
+        );
+
+        const progressBar = document.getElementById(
+          "reading-progress-bar"
+        );
+
+        function hideLoadingState() {
+          if (loadingState) {
+            loadingState.hidden = true;
+          }
         }
 
-        postRoot.innerHTML = `
-          <section class="wrap" style="padding: 80px 0">
-            <div class="empty-state">
-              <h1>Article unavailable</h1>
+        function showPostError() {
+          hideLoadingState();
+
+          postRoot.innerHTML = `
+            <section class="post-error-state">
+              <div class="post-error-icon" aria-hidden="true">
+                !
+              </div>
+
+              <span class="post-page-eyebrow">
+                Publication unavailable
+              </span>
+
+              <h1>We could not load this publication</h1>
+
               <p>
-                The article could not be loaded. Please return to the
-                articles page and try again.
+                The publication may have been removed, the link
+                may be incorrect, or a temporary connection
+                problem may have occurred.
               </p>
-              <a class="btn btn-primary" href="../articles/">
-                Return to articles
-              </a>
-            </div>
-          </section>
-        `;
+
+              <div class="post-error-actions">
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  onclick="window.location.reload()"
+                >
+                  Try again
+                </button>
+
+                <a
+                  class="btn btn-primary"
+                  href="../articles/"
+                >
+                  Browse publications
+                </a>
+              </div>
+            </section>
+          `;
+        }
+
+        function determinePostSection() {
+          const params = new URLSearchParams(
+            window.location.search
+          );
+
+          const requestedType = (
+            params.get("type") || ""
+          ).toLowerCase();
+
+          const pageText = postRoot.textContent.toLowerCase();
+
+          let section = {
+            name: "Articles & Reviews",
+            path: "../articles/"
+          };
+
+          if (
+            requestedType === "event" ||
+            pageText.includes("event")
+          ) {
+            section = {
+              name: "Events",
+              path: "../events/"
+            };
+          } else if (
+            requestedType === "update" ||
+            pageText.includes("official update")
+          ) {
+            section = {
+              name: "Updates",
+              path: "../updates/"
+            };
+          }
+
+          document
+            .querySelectorAll(
+              "#post-breadcrumb-section, " +
+              "#post-header-back, " +
+              "#post-bottom-back"
+            )
+            .forEach((link) => {
+              link.href = section.path;
+            });
+
+          const breadcrumb = document.getElementById(
+            "post-breadcrumb-section"
+          );
+
+          if (breadcrumb) {
+            breadcrumb.textContent = section.name;
+          }
+
+          const backButton = document.getElementById(
+            "post-header-back"
+          );
+
+          if (backButton) {
+            backButton.innerHTML = `
+              <span aria-hidden="true">←</span>
+              All ${section.name.toLowerCase()}
+            `;
+          }
+        }
+
+        function improveRenderedPost() {
+          if (!postRoot || !postRoot.children.length) {
+            return;
+          }
+
+          hideLoadingState();
+          determinePostSection();
+
+          const title =
+            postRoot.querySelector("h1")?.textContent?.trim();
+
+          const description =
+            postRoot
+              .querySelector(
+                ".post-excerpt, .article-excerpt, " +
+                ".post-summary, header p"
+              )
+              ?.textContent?.trim() ||
+            postRoot
+              .querySelector("p")
+              ?.textContent?.trim();
+
+          const image = postRoot.querySelector(
+            "img"
+          )?.src;
+
+          if (title) {
+            document.title =
+              `${title} — Beacon Innovation Hub`;
+
+            updateMeta(
+              'meta[name="twitter:title"]',
+              title
+            );
+
+            updateMeta(
+              'meta[property="og:title"]',
+              title
+            );
+          }
+
+          if (description) {
+            const cleanDescription = description
+              .replace(/\s+/g, " ")
+              .slice(0, 160);
+
+            updateMeta(
+              'meta[name="description"]',
+              cleanDescription
+            );
+
+            updateMeta(
+              'meta[name="twitter:description"]',
+              cleanDescription
+            );
+
+            updateMeta(
+              'meta[property="og:description"]',
+              cleanDescription
+            );
+          }
+
+          if (image) {
+            updateMeta(
+              'meta[property="og:image"]',
+              image,
+              true
+            );
+
+            updateMeta(
+              'meta[name="twitter:image"]',
+              image,
+              true
+            );
+          }
+
+          updateMeta(
+            'meta[property="og:url"]',
+            window.location.href
+          );
+
+          postRoot
+            .querySelectorAll("img")
+            .forEach((postImage) => {
+              postImage.loading = "lazy";
+              postImage.decoding = "async";
+            });
+
+          postRoot
+            .querySelectorAll('a[target="_blank"]')
+            .forEach((link) => {
+              link.rel = "noopener noreferrer";
+            });
+        }
+
+        function updateMeta(selector, value, create = false) {
+          if (!value) return;
+
+          let element = document.querySelector(selector);
+
+          if (!element && create) {
+            element = document.createElement("meta");
+
+            if (selector.includes("property=")) {
+              const property =
+                selector.match(/property="([^"]+)"/)?.[1];
+
+              element.setAttribute("property", property);
+            } else {
+              const name =
+                selector.match(/name="([^"]+)"/)?.[1];
+
+              element.setAttribute("name", name);
+            }
+
+            document.head.appendChild(element);
+          }
+
+          if (element) {
+            element.setAttribute("content", value);
+          }
+        }
+
+        function updateReadingProgress() {
+          const documentHeight =
+            document.documentElement.scrollHeight -
+            window.innerHeight;
+
+          const scrollPosition =
+            window.scrollY ||
+            document.documentElement.scrollTop;
+
+          const progress =
+            documentHeight > 0
+              ? Math.min(
+                  (scrollPosition / documentHeight) * 100,
+                  100
+                )
+              : 0;
+
+          progressBar.style.width = `${progress}%`;
+        }
+
+        shareButton?.addEventListener("click", async () => {
+          const title =
+            postRoot.querySelector("h1")?.textContent?.trim() ||
+            "Beacon Innovation Hub publication";
+
+          const shareData = {
+            title,
+            text: `Read "${title}" from Beacon Innovation Hub.`,
+            url: window.location.href
+          };
+
+          try {
+            if (navigator.share) {
+              await navigator.share(shareData);
+            } else {
+              await navigator.clipboard.writeText(
+                window.location.href
+              );
+
+              copyFeedback.textContent =
+                "Publication link copied.";
+            }
+          } catch (error) {
+            if (error.name !== "AbortError") {
+              copyFeedback.textContent =
+                "The publication could not be shared.";
+            }
+          }
+        });
+
+        copyButton?.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(
+              window.location.href
+            );
+
+            copyFeedback.textContent =
+              "Link copied to your clipboard.";
+
+            copyButton.classList.add("is-copied");
+
+            window.setTimeout(() => {
+              copyFeedback.textContent = "";
+              copyButton.classList.remove("is-copied");
+            }, 3000);
+          } catch (error) {
+            copyFeedback.textContent =
+              "Copy the link from your browser address bar.";
+          }
+        });
+
+        window.addEventListener(
+          "scroll",
+          updateReadingProgress,
+          { passive: true }
+        );
+
+        window.addEventListener(
+          "resize",
+          updateReadingProgress
+        );
+
+        const observer = new MutationObserver(() => {
+          if (postRoot.children.length) {
+            improveRenderedPost();
+          }
+        });
+
+        observer.observe(postRoot, {
+          childList: true,
+          subtree: true
+        });
+
+        try {
+          if (typeof renderPostDetail === "function") {
+            const result = renderPostDetail("post-root");
+
+            if (
+              result &&
+              typeof result.catch === "function"
+            ) {
+              result.catch((error) => {
+                console.error(
+                  "Post rendering failed:",
+                  error
+                );
+
+                showPostError();
+              });
+            }
+          } else {
+            showPostError();
+          }
+        } catch (error) {
+          console.error("Post rendering failed:", error);
+          showPostError();
+        }
+
+        updateReadingProgress();
+
+        window.setTimeout(() => {
+          if (
+            !postRoot.children.length &&
+            !loadingState.hidden
+          ) {
+            showPostError();
+          }
+        }, 12000);
       });
     </script>
   </body>
