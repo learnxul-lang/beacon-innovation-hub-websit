@@ -645,168 +645,185 @@ async function renderPostDetail(
 
   if (!root) return;
 
-  const id = new URLSearchParams(
+  const params = new URLSearchParams(
     window.location.search
-  ).get('id');
+  );
+
+  const id = params.get('id');
+
+  function postErrorHTML({
+    eyebrow = 'Publication unavailable',
+    title = 'Post not found',
+    message = 'The requested publication could not be found.',
+    backUrl = '/articles/',
+    backLabel = 'Browse publications'
+  } = {}) {
+    return `
+      <section class="post-error-state">
+        <div class="post-error-icon" aria-hidden="true">
+          !
+        </div>
+
+        <span class="post-page-eyebrow">
+          ${escapeHTML(eyebrow)}
+        </span>
+
+        <h1>${escapeHTML(title)}</h1>
+
+        <p>${escapeHTML(message)}</p>
+
+        <div class="post-error-actions">
+          <button
+            class="btn btn-secondary"
+            type="button"
+            onclick="window.location.reload()">
+            Try again
+          </button>
+
+          <a
+            class="btn btn-primary"
+            href="${escapeHTML(backUrl)}">
+            ${escapeHTML(backLabel)}
+          </a>
+        </div>
+      </section>
+    `;
+  }
 
   if (!id) {
-    root.innerHTML = `
-      <div class="wrap post-shell">
-        <div class="empty">
-          <h2>Post not found</h2>
-
-          <p>
-            This link does not contain a valid post ID.
-          </p>
-
-          <a
-            class="btn btn-secondary"
-            style="margin-top:18px"
-            href="/">
-            Return home
-          </a>
-        </div>
-      </div>
-    `;
+    root.innerHTML = postErrorHTML({
+      title: 'Publication link incomplete',
+      message:
+        'This link does not contain a valid publication ID.',
+      backUrl: '/articles/',
+      backLabel: 'Browse publications'
+    });
 
     return;
   }
 
-  const post = await window.STORE.getById(id);
+  try {
+    const post = await window.STORE.getById(id);
 
-  if (!post) {
+    if (!post) {
+      root.innerHTML = postErrorHTML({
+        title: 'Publication not found',
+        message:
+          'The publication may have been removed, unpublished, or the link may be incorrect.',
+        backUrl: '/articles/',
+        backLabel: 'Browse publications'
+      });
+
+      return;
+    }
+
+    const link = safeUrl(post.linkUrl || '');
+    const registration = safeUrl(
+      post.registrationUrl || ''
+    );
+    const image = safeMediaSrc(post.image || '');
+
+    const backUrl =
+      post.type === 'event'
+        ? '/events/'
+        : post.type === 'update'
+          ? '/updates/'
+          : '/articles/';
+
+    const publishedDate = fmtDate(
+      post.date || post.published_at || post.created_at
+    );
+
+    const author = String(
+      post.author || post.authorName || ''
+    ).trim();
+
+    const summary = String(
+      post.excerpt || post.summary || ''
+    ).trim();
+
+    const content = String(post.content || '');
+    const minutes = readingTime(content);
+
     root.innerHTML = `
-      <div class="wrap post-shell">
-        <div class="empty">
-          <h2>Post not found</h2>
-
-          <p>
-            The item may have been removed or the link may be incorrect.
-          </p>
-
-          <a
-            class="btn btn-secondary"
-            style="margin-top:18px"
-            href="/">
-            Return home
-          </a>
-        </div>
-      </div>
-    `;
-
-    return;
-  }
-
-  const link = safeUrl(post.linkUrl || '');
-  const registration = safeUrl(
-    post.registrationUrl || ''
-  );
-  const image = safeMediaSrc(post.image || '');
-
-  const backUrl =
-    post.type === 'event'
-      ? '/events/'
-      : post.type === 'update'
-        ? '/updates/'
-        : '/articles/';
-
-  const backLabel =
-    post.type === 'event'
-      ? 'events'
-      : post.type === 'update'
-        ? 'updates'
-        : 'articles';
-
-  root.innerHTML = `
-    <main class="post-shell">
-      <div class="wrap post-layout">
-        <article>
-          <header class="post-head">
-            <div class="eyebrow">
-              ${escapeHTML(typeLabel(post))}
-            </div>
-
-            <h1>${escapeHTML(post.title)}</h1>
-
-            <p class="post-summary">
-              ${escapeHTML(post.excerpt || '')}
-            </p>
-
-            ${tagHTML(post.tags)}
-          </header>
-
-          ${
-            image
-              ? `
+      <article class="article-detail">
+        ${
+          image
+            ? `
+              <figure class="article-cover">
                 <img
-                  class="post-cover"
                   src="${escapeHTML(image)}"
-                  alt="${escapeHTML(post.title)}">
-              `
-              : ''
-          }
+                  alt="${escapeHTML(
+                    post.imageAlt ||
+                      post.title ||
+                      'Beacon Innovation Hub publication'
+                  )}"
+                  loading="eager"
+                  decoding="async">
+              </figure>
+            `
+            : ''
+        }
 
-          <div class="post-content">
-            ${richTextHTML(post.content || '')}
+        <header class="article-header">
+          <div class="article-kicker-row">
+            <span class="category ${typeClass(post.type)}">
+              ${escapeHTML(typeLabel(post))}
+            </span>
+
+            ${
+              publishedDate
+                ? `
+                  <time
+                    class="article-published-date"
+                    datetime="${escapeHTML(
+                      post.date ||
+                        post.published_at ||
+                        post.created_at ||
+                        ''
+                    )}">
+                    ${escapeHTML(publishedDate)}
+                  </time>
+                `
+                : ''
+            }
           </div>
 
-          ${youtubeHTML(post.youtubeUrl)}
+          <h1>${escapeHTML(
+            post.title || 'Untitled publication'
+          )}</h1>
 
           ${
-            link
+            summary
               ? `
-                <a
-                  class="related-link"
-                  href="${escapeHTML(link)}"
-                  target="_blank"
-                  rel="noopener noreferrer">
+                <p class="post-excerpt">
+                  ${escapeHTML(summary)}
+                </p>
+              `
+              : ''
+          }
 
+          <div class="article-meta">
+            ${
+              author
+                ? `
                   <span>
-                    ${escapeHTML(
-                      post.linkLabel ||
-                        'Open related link'
-                    )}
+                    By ${escapeHTML(author)}
                   </span>
-
-                  <span aria-hidden="true">↗</span>
-                </a>
-              `
-              : ''
-          }
-
-          ${
-            registration
-              ? `
-                <a
-                  class="btn btn-primary"
-                  href="${escapeHTML(registration)}"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  Register for this event
-                </a>
-              `
-              : ''
-          }
-        </article>
-
-        <aside class="post-sidebar">
-          <h4>Post information</h4>
-
-          <div class="sidebar-meta">
-            <div>
-              <b>Published</b>
-              ${escapeHTML(fmtDate(post.date))}
-            </div>
+                `
+                : `
+                  <span>
+                    Beacon Innovation Hub
+                  </span>
+                `
+            }
 
             ${
               post.type === 'article'
                 ? `
-                  <div>
-                    <b>Reading time</b>
-                    ${readingTime(
-                      post.content
-                    )} minutes
-                  </div>
+                  <span>
+                    ${minutes} min read
+                  </span>
                 `
                 : ''
             }
@@ -814,12 +831,11 @@ async function renderPostDetail(
             ${
               post.eventDate
                 ? `
-                  <div>
-                    <b>Event date</b>
-                    ${escapeHTML(
+                  <span>
+                    Event: ${escapeHTML(
                       fmtDateTime(post.eventDate)
                     )}
-                  </div>
+                  </span>
                 `
                 : ''
             }
@@ -827,28 +843,122 @@ async function renderPostDetail(
             ${
               post.location
                 ? `
-                  <div>
-                    <b>Location</b>
+                  <span>
                     ${escapeHTML(post.location)}
-                  </div>
+                  </span>
                 `
                 : ''
             }
           </div>
 
-          <a
-            class="btn btn-secondary btn-block"
-            style="margin-top:18px"
-            href="${backUrl}">
-            Back to ${backLabel}
-          </a>
-        </aside>
-      </div>
-    </main>
-  `;
+          ${tagHTML(post.tags)}
+        </header>
 
-  document.title =
-    `${post.title} — Beacon Innovation Hub`;
+        ${
+          content
+            ? `
+              <div class="article-content">
+                ${richTextHTML(content)}
+              </div>
+            `
+            : `
+              <div class="article-content">
+                <p>
+                  No additional publication content is available.
+                </p>
+              </div>
+            `
+        }
+
+        ${
+          post.youtubeUrl
+            ? `
+              <div class="article-media">
+                ${youtubeHTML(post.youtubeUrl)}
+              </div>
+            `
+            : ''
+        }
+
+        ${
+          link || registration
+            ? `
+              <footer class="article-actions">
+                ${
+                  link
+                    ? `
+                      <a
+                        class="related-link"
+                        href="${escapeHTML(link)}"
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        <span>
+                          ${escapeHTML(
+                            post.linkLabel ||
+                              'Open related resource'
+                          )}
+                        </span>
+
+                        <span aria-hidden="true">↗</span>
+                      </a>
+                    `
+                    : ''
+                }
+
+                ${
+                  registration
+                    ? `
+                      <a
+                        class="btn btn-primary"
+                        href="${escapeHTML(registration)}"
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        Register for this event
+                      </a>
+                    `
+                    : ''
+                }
+              </footer>
+            `
+            : ''
+        }
+
+        <nav
+          class="article-return-navigation"
+          aria-label="Publication navigation">
+          <a
+            class="btn btn-secondary"
+            href="${escapeHTML(backUrl)}">
+            <span aria-hidden="true">←</span>
+            Back to ${
+              post.type === 'event'
+                ? 'events'
+                : post.type === 'update'
+                  ? 'updates'
+                  : 'articles'
+            }
+          </a>
+        </nav>
+      </article>
+    `;
+
+    document.title =
+      `${post.title || 'Publication'} — Beacon Innovation Hub`;
+
+    return post;
+  } catch (error) {
+    console.error('Unable to render publication:', error);
+
+    root.innerHTML = postErrorHTML({
+      title: 'Unable to load publication',
+      message:
+        'A connection or data error prevented this publication from loading.',
+      backUrl: '/articles/',
+      backLabel: 'Browse publications'
+    });
+
+    throw error;
+  }
 }
 
 function initNav() {
@@ -917,3 +1027,6 @@ document.addEventListener(
 window.renderUpdates = renderUpdates;
 window.renderEvents = renderEvents;
 window.renderArticles = renderArticles;
+window.renderArticleFilters = renderArticleFilters;
+window.renderGallery = renderGallery;
+window.renderPostDetail = renderPostDetail;
