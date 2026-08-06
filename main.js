@@ -160,7 +160,7 @@ function youtubeId(value = '') {
       return url.pathname.split('/').filter(Boolean)[0] || '';
     }
 
-    if (host.endsWith('youtube.com')) {
+    if (host === 'youtube.com' || host.endsWith('.youtube.com')) {
       if (url.pathname === '/watch') {
         return url.searchParams.get('v') || '';
       }
