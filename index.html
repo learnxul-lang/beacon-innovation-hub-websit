@@ -877,9 +877,6 @@
       }
 
       async function loadHomepageEvents() {
-        const container =
-          document.getElementById("home-events");
-
         try {
           if (typeof window.renderEvents !== "function") {
             throw new Error(
@@ -888,7 +885,8 @@
           }
 
           /*
-           * First try the object format used by the homepage.
+           * The homepage must display future events only.
+           * Do not fall back to an unfiltered event list.
            */
           await window.renderEvents(
             "home-events",
@@ -898,23 +896,6 @@
               upcomingOnly: true
             }
           );
-
-          /*
-           * Some older renderEvents functions expect a number
-           * instead of an options object. Retry using 3 when
-           * nothing was rendered.
-           */
-          if (
-            container &&
-            containerHasNoPublishedContent(container)
-          ) {
-            container.innerHTML = "";
-
-            await window.renderEvents(
-              "home-events",
-              3
-            );
-          }
 
           verifyRenderedContent(
             "home-events",
@@ -970,28 +951,6 @@
             "View all articles"
           );
         }
-      }
-
-      function containerHasNoPublishedContent(container) {
-        if (!container) {
-          return true;
-        }
-
-        const content = container.innerHTML.trim();
-
-        if (!content) {
-          return true;
-        }
-
-        const hasLoadingState =
-          container.querySelector(".content-loading");
-
-        const hasActualElement =
-          container.querySelector(
-            "article, .card, .event-card, .event-item, .post-card, li"
-          );
-
-        return Boolean(hasLoadingState) && !hasActualElement;
       }
 
       function verifyRenderedContent(
