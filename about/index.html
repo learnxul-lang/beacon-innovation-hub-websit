@@ -20,6 +20,158 @@
 <link href="../beacon-mark.webp" rel="icon" type="image/webp"/>
 <link href="../style.css?v=5" rel="stylesheet"/>
 <style>
+    .about-overview {
+      padding: clamp(64px, 8vw, 104px) 0;
+    }
+
+    .about-overview-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+      gap: clamp(36px, 6vw, 76px);
+      align-items: start;
+    }
+
+    .about-overview-copy h2 {
+      max-width: 680px;
+      margin-bottom: 20px;
+    }
+
+    .about-intro {
+      max-width: 720px;
+      margin: 0;
+      color: var(--ink-strong);
+      font-size: clamp(1.03rem, 1.5vw, 1.16rem);
+      line-height: 1.75;
+    }
+
+    .about-note {
+      max-width: 680px;
+      margin: 24px 0 0;
+      padding: 4px 0 4px 18px;
+      border-left: 3px solid var(--cyan);
+      color: var(--muted, #5f6b7a);
+      line-height: 1.7;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin: 0;
+    }
+
+    .about-stat {
+      position: relative;
+      display: flex;
+      min-height: 142px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: hidden;
+      flex-direction: column;
+      justify-content: flex-end;
+      background:
+        linear-gradient(145deg, rgba(8, 126, 232, 0.08), transparent 58%),
+        var(--surface);
+      box-shadow: var(--shadow-soft);
+      transition:
+        transform 260ms ease,
+        border-color 260ms ease,
+        box-shadow 260ms ease;
+    }
+
+    .about-stat::after {
+      position: absolute;
+      top: -32px;
+      right: -32px;
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: rgba(51, 210, 211, 0.12);
+      content: "";
+    }
+
+    .about-stat:hover {
+      border-color: rgba(8, 126, 232, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 18px 38px rgba(23, 43, 77, 0.12);
+    }
+
+    .about-stat dt {
+      z-index: 1;
+      order: 2;
+      margin-top: 7px;
+      color: var(--muted, #5f6b7a);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      line-height: 1.35;
+      text-transform: uppercase;
+    }
+
+    .about-stat dd {
+      z-index: 1;
+      order: 1;
+      margin: 0;
+      color: var(--ink-strong);
+      font-size: clamp(1.75rem, 4vw, 2.35rem);
+      font-weight: 850;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .about-pillars {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: clamp(36px, 5vw, 58px);
+    }
+
+    .about-pillar {
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--surface);
+      box-shadow: var(--shadow-soft);
+      transition:
+        transform 260ms ease,
+        border-color 260ms ease,
+        box-shadow 260ms ease;
+    }
+
+    .about-pillar:hover {
+      border-color: rgba(103, 52, 231, 0.28);
+      transform: translateY(-3px);
+      box-shadow: 0 18px 40px rgba(23, 43, 77, 0.12);
+    }
+
+    .about-pillar-index {
+      display: inline-flex;
+      width: 38px;
+      height: 38px;
+      margin-bottom: 18px;
+      border-radius: 12px;
+      align-items: center;
+      justify-content: center;
+      color: var(--purple);
+      background: rgba(103, 52, 231, 0.1);
+      font-size: 0.76rem;
+      font-weight: 850;
+      letter-spacing: 0.04em;
+    }
+
+    .about-pillar h3 {
+      margin: 0 0 10px;
+      color: var(--ink-strong);
+      font-size: 1.08rem;
+    }
+
+    .about-pillar p {
+      margin: 0;
+      color: var(--muted, #5f6b7a);
+      line-height: 1.65;
+    }
+
     .founders-section {
       padding: clamp(64px, 8vw, 104px) 0;
     }
@@ -223,12 +375,20 @@
     }
 
     @media (max-width: 940px) {
+      .about-overview-grid {
+        grid-template-columns: 1fr;
+      }
+
       .founders-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 640px) {
+      .about-pillars {
+        grid-template-columns: 1fr;
+      }
+
       .founders-grid {
         grid-template-columns: 1fr;
         gap: 20px;
@@ -239,12 +399,24 @@
       }
     }
 
+    @media (max-width: 420px) {
+      .about-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .about-stat {
+        min-height: 120px;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .founder-card,
       .founder-photo img,
       .founder-info::after,
       .founder-name,
-      .founder-role {
+      .founder-role,
+      .about-stat,
+      .about-pillar {
         transition: none;
       }
 
@@ -307,22 +479,54 @@
 </div>
 </div>
 </header>
-<section aria-labelledby="about-heading" class="founders-section" id="about-hub"><div class="wrap">
-<div class="section-head">
-<div>
+<section aria-labelledby="about-heading" class="about-overview" id="about-hub">
+<div class="wrap">
+<div class="about-overview-grid">
+<div class="about-overview-copy">
 <div class="eyebrow">About Beacon Innovation Hub</div>
-<h2 id="about-heading">Where ideas transform the future</h2>
+<h2 id="about-heading">Different skills. One shared vision.</h2>
+<p class="about-intro">Founded in November 2025, Beacon Innovation Hub brings together 13 contributors across software development, data, cybersecurity, robotics, electronics and digital innovation. Through practical projects and shared learning, the team transforms promising ideas into solutions for real community and industry challenges.</p>
+<p class="about-note">Operational and technical roles support coordination—not hierarchy. Every member remains an active contributor to the same mission: building useful technology, developing people and creating lasting impact.</p>
 </div>
+<dl aria-label="Beacon Innovation Hub at a glance" class="about-stats">
+<div class="about-stat">
+<dt>Founded in November</dt>
+<dd>2025</dd>
 </div>
-<div class="founder-card" style="padding: clamp(28px, 4vw, 44px);">
-<div class="founder-info" style="padding: 0; background: transparent;">
-<p style="margin-top: 0;">Beacon Innovation Hub (BIH) is a technology and innovation community founded in November 2025 to create an environment where creative ideas can be developed into practical solutions that address real-world challenges and contribute to economic growth. Our team consists of 13 members who contribute across operational, technical and research-focused roles, bringing together different skills and perspectives through a culture of collaboration rather than hierarchy.</p>
-<p>The Hub includes Mr Philani Gabriel Marapira, Founder &amp; Vision Leader; Mr Samkelo Mthembu and Mr Amahle Ndumiso Nqubeko Sibisi, Technical Leaders; Mr Kwanele Philasande Ntshantshali and Mr Sanele Shabalala, Project Managers; Mr Slindokuhle Gcina Mbhamali, Secretary &amp; Treasurer; Ms Aseza Mtshali, Secretary; and Ms Ayanda Mabaso, Treasurer. These responsibilities support coordination, communication and project delivery while every member remains an active contributor to the Hub's shared mission.</p>
-<p>Our technical work spans software development, front-end and back-end engineering, database design, data science, data analytics, data engineering, cybersecurity, security analysis, networking, 3D visual design, robotics and electronics. Mr Philani Gabriel Marapira contributes to software development and database design; Mr Samkelo Mthembu to 3D visual design and cybersecurity; Mr Amahle Ndumiso Nqubeko Sibisi to back-end development; Mr Kwanele Philasande Ntshantshali to cybersecurity; Ms Onele Honey Mbizweni to security analysis; Mr Slindokuhle Gcina Mbhamali to data engineering; Mr Bongile Ngwaqa and Ms Aseza Mtshali to data science; Ms Ayanda Mabaso to data analysis; Mr Sandile Lindokuhle Shange to data-competence assessment and robotics engineering through ZuluTech Collective; Mr Sibonelo Mhlophe to software development; and Mr Sanele Shabalala to front-end development.</p>
-<p style="margin-bottom: 0;">Our mission is to build an inclusive innovation ecosystem where skills in software, information technology, coding, data, robotics and electronics can be strengthened and applied to create meaningful opportunities, solve industry and community challenges, and generate lasting economic impact. At Beacon Innovation Hub, every contribution matters and every idea has the potential to transform the future.</p>
+<div class="about-stat">
+<dt>Active contributors</dt>
+<dd>13</dd>
 </div>
+<div class="about-stat">
+<dt>Technical disciplines</dt>
+<dd>10+</dd>
 </div>
-</div></section><section aria-labelledby="founders-heading" class="section-soft founders-section" id="founders">
+<div class="about-stat">
+<dt>Shared mission</dt>
+<dd>One</dd>
+</div>
+</dl>
+</div>
+<section aria-label="How Beacon Innovation Hub works" class="about-pillars">
+<article class="about-pillar">
+<span aria-hidden="true" class="about-pillar-index">01</span>
+<h3>Collaborate across disciplines</h3>
+<p>Different perspectives are brought together so ideas can be challenged, strengthened and developed as a team.</p>
+</article>
+<article class="about-pillar">
+<span aria-hidden="true" class="about-pillar-index">02</span>
+<h3>Build through practice</h3>
+<p>Members grow their skills by researching, designing, testing and improving solutions through real projects.</p>
+</article>
+<article class="about-pillar">
+<span aria-hidden="true" class="about-pillar-index">03</span>
+<h3>Create meaningful impact</h3>
+<p>Innovation is directed toward genuine community and industry needs, creating opportunities and long-term value.</p>
+</article>
+</section>
+</div>
+</section>
+<section aria-labelledby="founders-heading" class="section-soft founders-section" id="founders">
 <div class="wrap">
 <div class="section-head">
 <div>
