@@ -145,28 +145,34 @@
         inset: 0;
         z-index: 0;
         overflow: hidden;
-        opacity: 0.48;
-        filter: brightness(1.38) contrast(0.8) saturate(0.72);
+        opacity: 0.52;
+        filter: brightness(1.55) contrast(0.72) saturate(0.78);
         pointer-events: none;
       }
 
       .hero-background-image {
         position: absolute;
-        inset: -2%;
-        background-position: center 38%;
+        inset: 0;
+        background-position: center;
         background-repeat: no-repeat;
-        background-size: cover;
-        transform: scale(1.03);
+        background-size: contain;
+        opacity: 0;
+        animation: hero-photo-cycle 24s ease-in-out infinite;
       }
 
       .hero-background-image-one {
         background-image: url("IMG_0260.jpg");
+        animation-delay: -1.5s;
       }
 
       .hero-background-image-two {
         background-image: url("IMG_0230.jpg");
-        opacity: 0;
-        animation: hero-photo-crossfade 16s ease-in-out infinite;
+        animation-delay: 6.5s;
+      }
+
+      .hero-background-image-three {
+        background-image: url("IMG_0151.jpg");
+        animation-delay: 14.5s;
       }
 
       .hero::after {
@@ -188,18 +194,17 @@
         z-index: 2;
       }
 
-      @keyframes hero-photo-crossfade {
-        0%,
-        35% {
+      @keyframes hero-photo-cycle {
+        0% {
           opacity: 0;
         }
 
-        45%,
-        85% {
+        6%,
+        30% {
           opacity: 1;
         }
 
-        95%,
+        38%,
         100% {
           opacity: 0;
         }
@@ -267,15 +272,15 @@
 
       @media (max-width: 820px) {
         .hero-background {
-          opacity: 0.4;
+          opacity: 0.46;
         }
 
         .hero-background-image {
-          background-position: center 30%;
+          background-position: center;
         }
 
         .hero::after {
-          background: rgba(255, 255, 255, 0.86);
+          background: rgba(255, 255, 255, 0.84);
         }
 
         .nav-inner {
@@ -362,9 +367,13 @@
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .hero-background-image-two {
+        .hero-background-image {
           animation: none;
           opacity: 0;
+        }
+
+        .hero-background-image-one {
+          opacity: 1;
         }
       }
     </style>
@@ -468,6 +477,10 @@
 
           <span
             class="hero-background-image hero-background-image-two"
+          ></span>
+
+          <span
+            class="hero-background-image hero-background-image-three"
           ></span>
         </div>
 
