@@ -174,13 +174,44 @@
       #post-root .event-cta,
       #post-root [data-event-registration],
       #post-root .registration-card {
+        position: relative;
+        overflow: hidden;
         margin-top: 2rem;
         padding: clamp(1.25rem, 3vw, 2rem);
-        border: 1px solid rgba(15, 23, 42, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.2);
         border-radius: 22px;
-        background: linear-gradient(145deg, #ffffff, #f8fbff) !important;
+        background:
+          radial-gradient(
+            circle at 100% 0%,
+            rgba(56, 189, 248, 0.16),
+            transparent 42%
+          ),
+          linear-gradient(145deg, #ffffff, #eff8ff) !important;
         color: #0f172a !important;
-        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+        box-shadow:
+          0 18px 42px rgba(37, 99, 235, 0.1),
+          0 6px 16px rgba(15, 23, 42, 0.06);
+      }
+
+      #post-root .event-register::before,
+      #post-root .event-registration::before,
+      #post-root .register-for-event::before,
+      #post-root .registration-section::before,
+      #post-root .event-cta::before,
+      #post-root [data-event-registration]::before,
+      #post-root .registration-card::before {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 5px;
+        background: linear-gradient(
+          90deg,
+          #6734e7,
+          #2563eb 52%,
+          #22b8d6
+        );
+        content: "";
       }
 
       #post-root .event-register *,
@@ -203,6 +234,30 @@
         color: #475569 !important;
       }
 
+      #post-root .event-register h2,
+      #post-root .event-register h3,
+      #post-root .event-register h4,
+      #post-root .event-registration h2,
+      #post-root .event-registration h3,
+      #post-root .event-registration h4,
+      #post-root .register-for-event h2,
+      #post-root .register-for-event h3,
+      #post-root .register-for-event h4,
+      #post-root .registration-section h2,
+      #post-root .registration-section h3,
+      #post-root .registration-section h4,
+      #post-root .event-cta h2,
+      #post-root .event-cta h3,
+      #post-root .event-cta h4,
+      #post-root [data-event-registration] h2,
+      #post-root [data-event-registration] h3,
+      #post-root [data-event-registration] h4,
+      #post-root .registration-card h2,
+      #post-root .registration-card h3,
+      #post-root .registration-card h4 {
+        color: #102a43 !important;
+      }
+
       #post-root .event-register a,
       #post-root .event-registration a,
       #post-root .register-for-event a,
@@ -217,11 +272,50 @@
         min-height: 44px;
         padding: 0.75rem 1.1rem;
         border-radius: 12px;
-        background: #2563eb !important;
+        background: linear-gradient(
+          135deg,
+          #6734e7,
+          #2563eb 58%,
+          #0ea5e9
+        ) !important;
         color: #ffffff !important;
         font-weight: 800;
         text-decoration: none;
-        box-shadow: 0 9px 20px rgba(37, 99, 235, 0.2);
+        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.24);
+        transition:
+          transform 180ms ease,
+          box-shadow 180ms ease,
+          filter 180ms ease;
+      }
+
+      #post-root .event-register a:hover,
+      #post-root .event-register a:focus-visible,
+      #post-root .event-registration a:hover,
+      #post-root .event-registration a:focus-visible,
+      #post-root .register-for-event a:hover,
+      #post-root .register-for-event a:focus-visible,
+      #post-root .registration-section a:hover,
+      #post-root .registration-section a:focus-visible,
+      #post-root .event-cta a:hover,
+      #post-root .event-cta a:focus-visible,
+      #post-root [data-event-registration] a:hover,
+      #post-root [data-event-registration] a:focus-visible,
+      #post-root .registration-card a:hover,
+      #post-root .registration-card a:focus-visible {
+        transform: translateY(-2px);
+        filter: saturate(1.12) brightness(1.03);
+        box-shadow: 0 14px 30px rgba(37, 99, 235, 0.32);
+      }
+
+      #post-root .event-register a:focus-visible,
+      #post-root .event-registration a:focus-visible,
+      #post-root .register-for-event a:focus-visible,
+      #post-root .registration-section a:focus-visible,
+      #post-root .event-cta a:focus-visible,
+      #post-root [data-event-registration] a:focus-visible,
+      #post-root .registration-card a:focus-visible {
+        outline: 3px solid rgba(37, 99, 235, 0.3);
+        outline-offset: 3px;
       }
 
       #post-root .post-meta,
@@ -481,46 +575,6 @@
               ></p>
             </div>
 
-            <div class="post-side-card post-side-card-muted">
-              <span class="post-side-label">
-                Explore more
-              </span>
-
-              <ul class="post-explore-links">
-                <li>
-                  <a href="../updates/">
-                    <span>
-                      <strong>Official updates</strong>
-                      <small>News from the hub</small>
-                    </span>
-
-                    <span aria-hidden="true">→</span>
-                  </a>
-                </li>
-
-                <li>
-                  <a href="../events/">
-                    <span>
-                      <strong>Upcoming events</strong>
-                      <small>Programmes and activities</small>
-                    </span>
-
-                    <span aria-hidden="true">→</span>
-                  </a>
-                </li>
-
-                <li>
-                  <a href="../articles/">
-                    <span>
-                      <strong>Articles &amp; reviews</strong>
-                      <small>Technology and innovation</small>
-                    </span>
-
-                    <span aria-hidden="true">→</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
           </aside>
         </div>
       </section>
@@ -530,23 +584,24 @@
           <div class="post-bottom-card">
             <div>
               <span class="post-page-eyebrow">
-                Keep exploring
+                Join the community
               </span>
 
-              <h2>Discover more from the hub</h2>
+              <h2>Build, learn and innovate with BIH</h2>
 
               <p>
-                Browse the latest updates, articles, event
-                announcements and project highlights.
+                Explore practical challenges, collaborative projects
+                and opportunities within the Beacon Innovation Hub
+                community.
               </p>
             </div>
 
             <a
               class="btn btn-primary"
-              id="post-bottom-back"
-              href="../articles/"
+              id="post-community-link"
+              href="../community.html"
             >
-              View all publications
+              Visit the BIH Community
             </a>
           </div>
         </div>
@@ -785,8 +840,7 @@
           document
             .querySelectorAll(
               "#post-breadcrumb-section, " +
-              "#post-header-back, " +
-              "#post-bottom-back"
+              "#post-header-back"
             )
             .forEach((link) => {
               link.href = section.path;
