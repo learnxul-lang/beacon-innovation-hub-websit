@@ -179,6 +179,12 @@
         margin-bottom: 20px;
       }
 
+      .section-footer-action {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 24px;
+      }
+
       /* ==================================================
          MOBILE LAYOUT
       ================================================== */
@@ -257,6 +263,11 @@
         }
 
         .section-head .btn {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .section-footer-action .btn {
           width: 100%;
           justify-content: center;
         }
@@ -426,12 +437,6 @@
               <h2>Latest updates</h2>
             </div>
 
-            <a
-              class="btn btn-secondary btn-sm"
-              href="updates/index.html"
-            >
-              View all updates →
-            </a>
           </div>
 
           <div
@@ -442,6 +447,15 @@
               <span class="loading-spinner"></span>
               <p>Loading the latest updates...</p>
             </div>
+          </div>
+
+          <div class="section-footer-action">
+            <a
+              class="btn btn-secondary btn-sm"
+              href="updates/index.html"
+            >
+              View all updates →
+            </a>
           </div>
         </div>
       </section>
@@ -463,12 +477,6 @@
               </h2>
             </div>
 
-            <a
-              class="btn btn-secondary btn-sm"
-              href="events/index.html"
-            >
-              View full calendar →
-            </a>
           </div>
 
           <div id="home-events">
@@ -476,6 +484,15 @@
               <span class="loading-spinner"></span>
               <p>Loading upcoming events...</p>
             </div>
+          </div>
+
+          <div class="section-footer-action">
+            <a
+              class="btn btn-secondary btn-sm"
+              href="events/index.html"
+            >
+              View full calendar →
+            </a>
           </div>
         </div>
       </section>
@@ -494,12 +511,6 @@
               </h2>
             </div>
 
-            <a
-              class="btn btn-secondary btn-sm"
-              href="articles/index.html"
-            >
-              View all articles →
-            </a>
           </div>
 
           <div
@@ -510,6 +521,15 @@
               <span class="loading-spinner"></span>
               <p>Loading the latest articles...</p>
             </div>
+          </div>
+
+          <div class="section-footer-action">
+            <a
+              class="btn btn-secondary btn-sm"
+              href="articles/index.html"
+            >
+              View full articles →
+            </a>
           </div>
         </div>
       </section>
