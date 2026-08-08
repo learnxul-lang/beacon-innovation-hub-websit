@@ -20,6 +20,68 @@
 <link href="../beacon-mark.webp" rel="icon" type="image/webp"/>
 <link href="../style.css?v=5" rel="stylesheet"/>
 <style>
+    .hero,
+    .about-overview,
+    #founders {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+    }
+
+    .hero::before,
+    .about-overview::before,
+    #founders::before {
+      position: absolute;
+      z-index: 0;
+      inset: 0;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: contain;
+      content: "";
+      filter: saturate(1.65) brightness(1.18) contrast(0.92);
+      pointer-events: none;
+    }
+
+    .hero::before {
+      background-image: url("../IMG_0151(1).jpg");
+      opacity: 0.44;
+    }
+
+    .about-overview::before {
+      background-image: url("../IMG_0260(1).jpg");
+      opacity: 0.14;
+    }
+
+    #founders::before {
+      background-image: url("../IMG_0230(1).jpg");
+      opacity: 0.11;
+    }
+
+    .hero::after {
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.92) 0%,
+        rgba(255, 255, 255, 0.78) 55%,
+        rgba(248, 250, 252, 0.7) 100%
+      );
+      content: "";
+      pointer-events: none;
+    }
+
+    .hero > .wrap {
+      position: relative;
+      z-index: 2;
+    }
+
+    .about-overview > .wrap,
+    #founders > .wrap {
+      position: relative;
+      z-index: 1;
+    }
+
     .about-overview {
       padding: clamp(64px, 8vw, 104px) 0;
     }
