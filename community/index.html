@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en-ZA">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DNH00V8H4V"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-DNH00V8H4V');
+    </script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BIH Community — Learn, Build and Solve</title>
+    <meta
+      name="description"
+      content="The Beacon Innovation Hub Community brings emerging talent together to build practical technology solutions."
+    />
+    <link rel="canonical" href="https://beaconinnovationhub.co.za/community/" />
+
+    <meta property="og:title" content="Beacon Innovation Hub Community" />
+    <meta
+      property="og:description"
+      content="Learn, build and solve real problems with the BIH Community."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://beaconinnovationhub.co.za/community/" />
+
+    <link rel="icon" type="image/webp" href="../beacon-mark.webp" />
+    <link rel="stylesheet" href="../style.css?v=7" />
+
+    <style>
+      .community-video-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .community-video-card {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fff;
+        box-shadow: var(--shadow-soft);
+      }
+
+      .community-video-card .embed-wrap {
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .community-video-body {
+        padding: 20px;
+      }
+
+      .community-video-body .card-meta {
+        margin-bottom: 10px;
+      }
+
+      .community-video-body h3 {
+        font-size: 1.16rem;
+      }
+
+      .community-video-body h3 a:hover {
+        color: var(--purple);
+      }
+
+      .community-video-link {
+        display: inline-block;
+        margin-top: 16px;
+        color: var(--purple);
+        font-size: .8rem;
+        font-weight: 800;
+      }
+
+      .community-video-grid > .empty {
+        grid-column: 1 / -1;
+      }
+
+      @media (max-width: 760px) {
+        .community-video-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="community-page">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <nav class="site-nav" aria-label="Primary navigation">
+      <div class="wrap nav-inner">
+        <a class="brand" href="../" aria-label="Beacon Innovation Hub home">
+          <img src="../beacon-mark.webp" alt="" />
+          <span>Beacon Innovation Hub</span>
+        </a>
+
+        <button
+          class="nav-burger"
+          type="button"
+          aria-label="Open navigation"
+          aria-expanded="false"
+          aria-controls="primary-navigation"
+        >
+          <span class="burger-line"></span>
+          <span class="burger-line"></span>
+          <span class="burger-line"></span>
+        </button>
+
+        <ul class="nav-links" id="primary-navigation">
+          <li><a href="../" data-page="/">Home</a></li>
+          <li><a href="../updates/" data-page="/updates/">Updates</a></li>
+          <li><a href="../events/" data-page="/events/">Events</a></li>
+          <li><a href="../articles/" data-page="/articles/">Articles &amp; Reviews</a></li>
+          <li><a class="active" href="../community/" data-page="/community/" aria-current="page">Community</a></li>
+          <li><a href="../gallery/" data-page="/gallery/">Gallery</a></li>
+          <li><a href="../about/" data-page="/about/">About Us</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main id="main-content">
+      <header class="community-hero">
+        <div class="community-hero-glow" aria-hidden="true"></div>
+
+        <div class="wrap community-hero-grid">
+          <div class="community-hero-copy">
+            <div class="eyebrow">Beacon Innovation Hub Community</div>
+            <h1>
+              Learn. Build. Solve
+              <span class="gradient-text">real problems together.</span>
+            </h1>
+            <p class="lede">
+              A practical community where emerging talent builds technology
+              solutions for real challenges.
+            </p>
+
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#community-videos">Watch updates</a>
+              <a class="btn btn-secondary" href="#partnerships">Partner with BIH</a>
+            </div>
+
+            <ul class="community-hero-points" aria-label="Community principles">
+              <li>Learn</li>
+              <li>Build</li>
+              <li>Connect</li>
+            </ul>
+          </div>
+
+          <aside class="launch-card" aria-labelledby="launch-heading">
+            <div class="launch-card-top">
+              <span class="launch-label">Official community launch</span>
+              <span class="launch-status">Launched</span>
+            </div>
+
+            <div class="launch-date" aria-label="2 August 2026">
+              <span class="launch-day">02</span>
+              <span class="launch-month">August</span>
+              <span class="launch-year">2026</span>
+            </div>
+
+            <div class="launch-divider"></div>
+
+            <div class="launch-location">
+              <span class="launch-location-icon" aria-hidden="true">⌖</span>
+              <div>
+                <h2 id="launch-heading">Empangeni, KwaZulu-Natal</h2>
+                <p>Launched at the official BIH studio.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </header>
+
+      <section id="how-it-works" class="community-intro" aria-labelledby="how-heading">
+        <div class="wrap community-intro-grid">
+          <div class="community-intro-copy">
+            <div class="eyebrow">How it works</div>
+            <h2 id="how-heading">Learn by building.</h2>
+            <p class="community-lead">
+              Members work in teams, solve real problems and improve their ideas
+              through practical feedback.
+            </p>
+          </div>
+
+          <div class="simple-steps" aria-label="Community process">
+            <article>
+              <span class="simple-step-number">01</span>
+              <div><h3>Choose a challenge</h3><p>Start with a real need.</p></div>
+            </article>
+            <article>
+              <span class="simple-step-number">02</span>
+              <div><h3>Build together</h3><p>Turn ideas into working solutions.</p></div>
+            </article>
+            <article>
+              <span class="simple-step-number">03</span>
+              <div><h3>Test and improve</h3><p>Use feedback to strengthen the work.</p></div>
+            </article>
+            <article>
+              <span class="simple-step-number">04</span>
+              <div><h3>Connect</h3><p>Reach partners, sponsors and users.</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="community-videos" class="section-soft" aria-labelledby="videos-heading">
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Community updates</div>
+              <h2 id="videos-heading">Latest videos</h2>
+            </div>
+            <a class="btn btn-secondary" href="../updates/">View all updates</a>
+          </div>
+
+          <div
+            id="community-video-updates"
+            class="community-video-grid"
+            aria-live="polite"
+          >
+            <div class="empty">Loading video updates…</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="partnerships" class="partnership-section" aria-labelledby="partnership-heading">
+        <div class="wrap partnership-grid">
+          <div class="partnership-copy">
+            <div class="eyebrow">Sponsors &amp; partners</div>
+            <h2 id="partnership-heading">Help strong ideas move forward.</h2>
+            <p>Support a challenge, tools, mentorship, funding or a pilot.</p>
+            <a
+              class="btn btn-primary"
+              href="mailto:info@beaconinnovationhub.co.za?subject=BIH%20partnership%20or%20sponsorship%20enquiry"
+            >Email the BIH team</a>
+          </div>
+
+          <div class="partnership-options">
+            <article><span>01</span><div><h3>Challenge partner</h3><p>Bring a real problem.</p></div></article>
+            <article><span>02</span><div><h3>Resource sponsor</h3><p>Provide tools or funding.</p></div></article>
+            <article><span>03</span><div><h3>Knowledge partner</h3><p>Offer mentorship or review.</p></div></article>
+            <article><span>04</span><div><h3>Pilot partner</h3><p>Test a promising solution.</p></div></article>
+          </div>
+        </div>
+      </section>
+
+      <section id="policies" class="section-soft community-policies" aria-labelledby="policies-heading">
+        <div class="wrap community-policies-grid">
+          <div class="community-policies-intro">
+            <div class="eyebrow">Community policies</div>
+            <h2 id="policies-heading">Clear rules. Protected ideas.</h2>
+          </div>
+
+          <div class="policy-accordion">
+            <details open>
+              <summary><span>01</span>Intellectual property <i aria-hidden="true">+</i></summary>
+              <div><p>Creators keep their original work unless a different written agreement is accepted first.</p></div>
+            </details>
+            <details>
+              <summary><span>02</span>Conduct and participation <i aria-hidden="true">+</i></summary>
+              <div><p>Members must contribute honestly, work respectfully and meet agreed responsibilities.</p></div>
+            </details>
+            <details>
+              <summary><span>03</span>Privacy and data <i aria-hidden="true">+</i></summary>
+              <div><p>Personal and partner data must be protected and used only for an approved purpose.</p></div>
+            </details>
+            <details>
+              <summary><span>04</span>Assessment and certification <i aria-hidden="true">+</i></summary>
+              <div><p>Certificates require verified work and demonstrated competence, not attendance alone.</p></div>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <div class="footer-grid">
+          <div>
+            <a class="brand footer-brand" href="../" aria-label="Beacon Innovation Hub home">
+              <img src="../beacon-mark.webp" alt="" />
+              <span>Beacon Innovation Hub</span>
+            </a>
+            <p class="footer-description">Where ideas transform the future.</p>
+          </div>
+
+          <div>
+            <h4>Explore</h4>
+            <ul>
+              <li><a href="../updates/">Official updates</a></li>
+              <li><a href="../events/">Upcoming events</a></li>
+              <li><a href="../articles/">Articles &amp; reviews</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4>Community</h4>
+            <ul>
+              <li><a href="#how-it-works">How it works</a></li>
+              <li><a href="#community-videos">Video updates</a></li>
+              <li><a href="#policies">Policies</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4>Connect</h4>
+            <div class="community-social-links">
+              <a href="https://za.linkedin.com/company/beacon-innovation-hub" target="_blank" rel="noopener noreferrer" aria-label="Beacon Innovation Hub on LinkedIn"><span>in</span>LinkedIn</a>
+              <a href="https://github.com/Beacon-Innovation-Hub" target="_blank" rel="noopener noreferrer" aria-label="Beacon Innovation Hub on GitHub"><span>GH</span>GitHub</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <span>© <span data-year>2026</span> Beacon Innovation Hub</span>
+          <span>Where ideas transform the future</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase-config.js?v=5"></script>
+    <script src="../store.js?v=5"></script>
+    <script src="../main.js?v=7"></script>
+    <script>
+      async function renderCommunityVideoUpdates() {
+        const root = document.getElementById('community-video-updates');
+        if (!root) return;
+
+        try {
+          const updates = await window.STORE.byType('update');
+
+          const videos = updates
+            .filter(post => {
+              const tags = normalizeTags(post.tags).map(tag => tag.toLowerCase());
+              const isCommunityVideo =
+                tags.includes('community-video') || tags.includes('community');
+
+              return isCommunityVideo && youtubeId(post.youtubeUrl);
+            })
+            .slice(0, 6);
+
+          root.innerHTML = videos.length
+            ? videos.map(post => {
+                const date = fmtDate(post.date || post.published_at || post.created_at);
+
+                return `
+                  <article class="community-video-card">
+                    ${youtubeHTML(post.youtubeUrl)}
+                    <div class="community-video-body">
+                      <div class="card-meta">
+                        <span class="type-pill">Community update</span>
+                        ${date ? `<span>${escapeHTML(date)}</span>` : ''}
+                      </div>
+                      <h3><a href="${postHref(post)}">${escapeHTML(post.title || 'BIH Community update')}</a></h3>
+                      <a class="community-video-link" href="${postHref(post)}">Read update →</a>
+                    </div>
+                  </article>
+                `;
+              }).join('')
+            : `
+              <div class="empty">
+                Add a YouTube link to an update and select
+                <strong>Show on Community page</strong> in the admin dashboard.
+              </div>
+            `;
+        } catch (error) {
+          console.error('Unable to load community videos:', error);
+          root.innerHTML = '<div class="empty">Video updates could not be loaded.</div>';
+        }
+      }
+
+      renderCommunityVideoUpdates();
+    </script>
+  </body>
+</html>
