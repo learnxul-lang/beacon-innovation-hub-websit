@@ -28,706 +28,7 @@
     <meta property="og:url" content="https://beaconinnovationhub.co.za/community/" />
 
     <link rel="icon" type="image/webp" href="../beacon-mark.webp" />
-    <link rel="stylesheet" href="../style.css?v=7" />
-
-    <style>
-      /* Community page refinement — uses the existing BIH design tokens. */
-      .community-page {
-        background: #f8fbff;
-      }
-
-      .community-page .site-nav {
-        border-bottom: 1px solid rgba(207, 220, 235, .72);
-        background: rgba(255, 255, 255, .88);
-        box-shadow: 0 10px 34px rgba(28, 46, 79, .055);
-        backdrop-filter: blur(18px);
-      }
-
-      .community-page main {
-        overflow: hidden;
-      }
-
-      .community-page section,
-      .community-page header {
-        scroll-margin-top: 96px;
-      }
-
-      .community-hero {
-        position: relative;
-        padding: clamp(76px, 9vw, 122px) 0 clamp(84px, 10vw, 132px);
-        overflow: hidden;
-        background:
-          radial-gradient(circle at 8% 18%, rgba(103, 52, 231, .13), transparent 24rem),
-          radial-gradient(circle at 90% 8%, rgba(34, 184, 214, .18), transparent 25rem),
-          linear-gradient(145deg, #fbfdff 0%, #f7f4ff 48%, #eefaff 100%);
-      }
-
-      .community-hero::before {
-        position: absolute;
-        inset: 0;
-        background-image: radial-gradient(rgba(76, 105, 146, .16) .75px, transparent .75px);
-        background-size: 24px 24px;
-        content: "";
-        mask-image: linear-gradient(to bottom, #000, transparent 88%);
-        pointer-events: none;
-      }
-
-      .community-hero::after {
-        position: absolute;
-        right: -180px;
-        bottom: -270px;
-        width: 620px;
-        height: 620px;
-        border: 1px solid rgba(103, 52, 231, .12);
-        border-radius: 50%;
-        box-shadow:
-          0 0 0 78px rgba(8, 126, 232, .035),
-          0 0 0 156px rgba(34, 184, 214, .025);
-        content: "";
-        pointer-events: none;
-      }
-
-      .community-hero-grid {
-        position: relative;
-        z-index: 1;
-        grid-template-columns: minmax(0, 1.06fr) minmax(350px, .78fr);
-        align-items: center;
-        gap: clamp(48px, 8vw, 112px);
-      }
-
-      .community-hero-copy {
-        max-width: 720px;
-      }
-
-      .community-hero-copy .eyebrow {
-        display: inline-flex;
-        padding: 8px 12px;
-        border: 1px solid rgba(103, 52, 231, .13);
-        border-radius: 999px;
-        background: rgba(255, 255, 255, .7);
-        box-shadow: 0 8px 24px rgba(58, 69, 105, .06);
-      }
-
-      .community-hero-copy h1 {
-        max-width: 760px;
-        margin-top: 21px;
-        font-size: clamp(3.45rem, 7vw, 6.6rem);
-        letter-spacing: -.065em;
-        line-height: .92;
-      }
-
-      .community-hero-copy h1 .gradient-text {
-        display: block;
-        margin-top: 9px;
-        background: linear-gradient(105deg, var(--purple), var(--blue) 54%, #16a9bd);
-        background-clip: text;
-        -webkit-background-clip: text;
-        color: transparent;
-      }
-
-      .community-hero-copy .lede {
-        max-width: 610px;
-        margin-top: 28px;
-        color: #536173;
-        font-size: clamp(1.02rem, 1.45vw, 1.2rem);
-        line-height: 1.75;
-      }
-
-      .community-page .hero-actions {
-        margin-top: 33px;
-      }
-
-      .community-page .hero-actions .btn-primary,
-      .partnership-copy .btn-primary {
-        border-color: transparent;
-        background: linear-gradient(115deg, var(--purple), var(--blue));
-        box-shadow: 0 14px 32px rgba(79, 83, 220, .24);
-      }
-
-      .community-page .hero-actions .btn-primary:hover,
-      .partnership-copy .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 18px 38px rgba(79, 83, 220, .3);
-      }
-
-      .community-page .hero-actions .btn-secondary {
-        border-color: rgba(103, 52, 231, .16);
-        background: rgba(255, 255, 255, .78);
-        box-shadow: 0 10px 24px rgba(31, 48, 77, .06);
-      }
-
-      .community-hero-points {
-        display: flex;
-        gap: 10px;
-        margin-top: 30px;
-      }
-
-      .community-hero-points li {
-        display: inline-flex;
-        min-width: 104px;
-        align-items: center;
-        gap: 9px;
-        padding: 11px 14px;
-        border: 1px solid rgba(212, 222, 235, .9);
-        border-radius: 13px;
-        background: rgba(255, 255, 255, .65);
-        color: #3b4859;
-        font-size: .76rem;
-        font-weight: 800;
-        box-shadow: 0 9px 24px rgba(35, 55, 91, .045);
-      }
-
-      .community-hero-points li::before {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--purple), var(--cyan));
-        box-shadow: 0 0 0 5px rgba(103, 52, 231, .08);
-        content: "";
-      }
-
-      .launch-card {
-        position: relative;
-        padding: clamp(28px, 4vw, 42px);
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, .9);
-        border-radius: 30px;
-        background:
-          radial-gradient(circle at 88% 12%, rgba(34, 184, 214, .2), transparent 11rem),
-          linear-gradient(145deg, rgba(255, 255, 255, .96), rgba(248, 246, 255, .94));
-        box-shadow:
-          0 32px 80px rgba(45, 60, 105, .16),
-          inset 0 0 0 1px rgba(103, 52, 231, .06);
-      }
-
-      .launch-card::before {
-        position: absolute;
-        top: 0;
-        right: 0;
-        left: 0;
-        height: 5px;
-        background: linear-gradient(90deg, var(--purple), var(--blue), var(--cyan));
-        content: "";
-      }
-
-      .launch-card::after {
-        right: -95px;
-        bottom: -100px;
-        width: 270px;
-        height: 270px;
-        border-color: rgba(103, 52, 231, .12);
-        box-shadow: 0 0 0 42px rgba(8, 126, 232, .035), 0 0 0 84px rgba(34, 184, 214, .025);
-      }
-
-      .launch-label {
-        color: var(--purple);
-      }
-
-      .launch-status {
-        border: 1px solid rgba(30, 155, 98, .12);
-        background: rgba(225, 250, 239, .82);
-      }
-
-      .launch-date {
-        margin-top: 40px;
-      }
-
-      .launch-day {
-        background: linear-gradient(125deg, #242936, var(--purple));
-        background-clip: text;
-        -webkit-background-clip: text;
-        color: transparent;
-        font-size: clamp(5.8rem, 10vw, 8.25rem);
-      }
-
-      .launch-divider {
-        margin: 38px 0 28px;
-        opacity: .42;
-      }
-
-      .launch-location-icon {
-        box-shadow: 0 10px 24px rgba(79, 83, 220, .22);
-      }
-
-      .community-intro {
-        padding: clamp(82px, 10vw, 126px) 0;
-        background: #fff;
-      }
-
-      .community-intro-grid {
-        grid-template-columns: minmax(260px, .62fr) minmax(0, 1.38fr);
-        align-items: start;
-        gap: clamp(50px, 8vw, 110px);
-      }
-
-      .community-intro-copy {
-        position: sticky;
-        top: 112px;
-        padding-top: 18px;
-      }
-
-      .community-intro-copy h2 {
-        max-width: 340px;
-        margin-top: 14px;
-        font-size: clamp(2.25rem, 4vw, 3.8rem);
-        letter-spacing: -.045em;
-      }
-
-      .community-intro-copy .community-lead {
-        max-width: 390px;
-        margin-top: 20px;
-        color: #687487;
-        font-size: .98rem;
-      }
-
-      .simple-steps {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
-        overflow: visible;
-        border: 0;
-        border-radius: 0;
-        background: transparent;
-        box-shadow: none;
-      }
-
-      .simple-steps article {
-        position: relative;
-        display: block;
-        min-height: 190px;
-        padding: 28px;
-        overflow: hidden;
-        border: 1px solid #dde6f1;
-        border-radius: 22px;
-        background: #fff;
-        box-shadow: 0 17px 46px rgba(34, 53, 86, .075);
-        transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
-      }
-
-      .simple-steps article:hover {
-        transform: translateY(-5px);
-        border-color: rgba(103, 52, 231, .22);
-        box-shadow: 0 24px 54px rgba(47, 55, 116, .13);
-      }
-
-      .simple-steps article::after {
-        position: absolute;
-        top: -58px;
-        right: -55px;
-        width: 155px;
-        height: 155px;
-        border-radius: 50%;
-        background: var(--soft-purple);
-        content: "";
-      }
-
-      .simple-steps article:nth-child(2)::after { background: var(--soft-blue); }
-      .simple-steps article:nth-child(3)::after { background: #eafafa; }
-      .simple-steps article:nth-child(4)::after { background: var(--soft-orange); }
-
-      .simple-step-number {
-        position: relative;
-        z-index: 1;
-        display: grid;
-        width: 42px;
-        height: 42px;
-        place-items: center;
-        border-radius: 13px;
-        color: #fff;
-        background: linear-gradient(135deg, var(--purple), var(--blue));
-        box-shadow: 0 9px 22px rgba(79, 83, 220, .2);
-        font-size: .72rem;
-      }
-
-      .simple-steps article div {
-        position: relative;
-        z-index: 1;
-      }
-
-      .simple-steps article h3 {
-        margin-top: 27px;
-        font-size: 1.18rem;
-      }
-
-      .simple-steps article p {
-        margin-top: 8px;
-        color: #758092;
-        font-size: .84rem;
-      }
-
-      #community-videos {
-        position: relative;
-        padding: clamp(84px, 10vw, 124px) 0;
-        background:
-          radial-gradient(circle at 90% 15%, rgba(34, 184, 214, .13), transparent 24rem),
-          linear-gradient(145deg, #f4f7ff, #f7fbff 52%, #f4fffe);
-      }
-
-      #community-videos::before {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        width: min(1160px, 88%);
-        height: 1px;
-        transform: translateX(-50%);
-        background: linear-gradient(90deg, transparent, rgba(103, 52, 231, .22), transparent);
-        content: "";
-      }
-
-      #community-videos .section-head {
-        align-items: end;
-        margin-bottom: 36px;
-      }
-
-      #community-videos .section-head h2 {
-        margin-top: 10px;
-        font-size: clamp(2.25rem, 4vw, 3.8rem);
-        letter-spacing: -.045em;
-      }
-
-      #community-videos .section-head .btn {
-        border-color: rgba(103, 52, 231, .14);
-        background: rgba(255, 255, 255, .75);
-        box-shadow: 0 10px 26px rgba(36, 56, 92, .07);
-      }
-
-      .community-video-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 22px;
-      }
-
-      .community-video-card {
-        overflow: hidden;
-        border: 1px solid rgba(214, 224, 236, .95);
-        border-radius: 24px;
-        background: rgba(255, 255, 255, .92);
-        box-shadow: 0 20px 55px rgba(35, 53, 88, .09);
-        transition: transform .22s ease, box-shadow .22s ease;
-      }
-
-      .community-video-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 28px 65px rgba(47, 55, 116, .15);
-      }
-
-      .community-video-card .embed-wrap {
-        margin: 0;
-        border-radius: 0;
-        box-shadow: none;
-      }
-
-      .community-video-body {
-        padding: 23px 24px 25px;
-      }
-
-      .community-video-body .card-meta {
-        margin-bottom: 13px;
-      }
-
-      .community-video-body .type-pill {
-        background: linear-gradient(120deg, var(--soft-purple), var(--soft-blue));
-      }
-
-      .community-video-body h3 {
-        font-size: 1.22rem;
-        line-height: 1.32;
-      }
-
-      .community-video-body h3 a:hover {
-        color: var(--purple);
-      }
-
-      .community-video-link {
-        display: inline-flex;
-        align-items: center;
-        margin-top: 17px;
-        color: var(--purple);
-        font-size: .8rem;
-        font-weight: 850;
-      }
-
-      .community-video-grid > .empty {
-        grid-column: 1 / -1;
-        min-height: 250px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 18px;
-        padding: 55px 26px;
-        border: 1px dashed rgba(103, 52, 231, .24);
-        border-radius: 24px;
-        background: rgba(255, 255, 255, .72);
-        box-shadow: 0 16px 45px rgba(35, 53, 88, .06);
-      }
-
-      .video-empty-icon {
-        display: grid;
-        width: 58px;
-        height: 58px;
-        flex: 0 0 auto;
-        place-items: center;
-        border-radius: 18px;
-        color: #fff;
-        background: linear-gradient(135deg, var(--purple), var(--blue));
-        box-shadow: 0 14px 30px rgba(79, 83, 220, .22);
-        font-size: 1rem;
-      }
-
-      .video-empty-state h3 {
-        font-size: 1.08rem;
-      }
-
-      .video-empty-state p {
-        max-width: 510px;
-        margin-top: 6px;
-        color: #778294;
-        font-size: .84rem;
-      }
-
-      .partnership-section {
-        position: relative;
-        padding: clamp(86px, 10vw, 126px) 0;
-        background: #fff;
-      }
-
-      .partnership-grid {
-        position: relative;
-        grid-template-columns: minmax(300px, .82fr) minmax(0, 1.18fr);
-        gap: clamp(48px, 7vw, 86px);
-        padding: clamp(38px, 6vw, 72px);
-        overflow: hidden;
-        border: 1px solid rgba(103, 52, 231, .12);
-        border-radius: 32px;
-        background:
-          radial-gradient(circle at 88% 15%, rgba(34, 184, 214, .19), transparent 18rem),
-          linear-gradient(130deg, #f8f5ff, #f2f8ff 55%, #effdfd);
-        box-shadow: 0 28px 80px rgba(42, 58, 105, .12);
-      }
-
-      .partnership-grid::after {
-        position: absolute;
-        right: -130px;
-        bottom: -200px;
-        width: 420px;
-        height: 420px;
-        border: 1px solid rgba(103, 52, 231, .1);
-        border-radius: 50%;
-        box-shadow: 0 0 0 54px rgba(8, 126, 232, .03), 0 0 0 108px rgba(34, 184, 214, .022);
-        content: "";
-        pointer-events: none;
-      }
-
-      .partnership-copy,
-      .partnership-options {
-        position: relative;
-        z-index: 1;
-      }
-
-      .partnership-copy .eyebrow {
-        color: var(--purple);
-      }
-
-      .partnership-copy h2 {
-        max-width: 480px;
-        color: var(--ink-strong);
-        font-size: clamp(2.25rem, 4vw, 3.65rem);
-        letter-spacing: -.045em;
-      }
-
-      .partnership-copy p {
-        max-width: 460px;
-        color: #687487;
-      }
-
-      .partnership-options {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 13px;
-        border: 0;
-      }
-
-      .partnership-options article {
-        display: block;
-        min-height: 150px;
-        padding: 22px;
-        border: 1px solid rgba(255, 255, 255, .95);
-        border-radius: 18px;
-        background: rgba(255, 255, 255, .72);
-        box-shadow: 0 12px 30px rgba(38, 56, 91, .065);
-      }
-
-      .partnership-options article > span {
-        display: inline-grid;
-        width: 32px;
-        height: 32px;
-        place-items: center;
-        border-radius: 10px;
-        color: var(--purple);
-        background: var(--soft-purple);
-      }
-
-      .partnership-options h3 {
-        margin-top: 20px;
-        color: var(--ink-strong);
-      }
-
-      .partnership-options p {
-        margin-top: 7px;
-        color: #7a8596;
-      }
-
-      .community-policies {
-        padding: clamp(86px, 10vw, 126px) 0;
-        background:
-          linear-gradient(90deg, rgba(103, 52, 231, .018) 1px, transparent 1px),
-          linear-gradient(rgba(8, 126, 232, .018) 1px, transparent 1px),
-          #f6f8fc;
-        background-size: 52px 52px, 52px 52px, auto;
-      }
-
-      .community-policies-grid {
-        grid-template-columns: minmax(270px, .7fr) minmax(0, 1.3fr);
-        gap: clamp(50px, 8vw, 100px);
-      }
-
-      .community-policies-intro {
-        position: sticky;
-        top: 112px;
-        padding-top: 13px;
-      }
-
-      .community-policies-intro h2 {
-        max-width: 390px;
-        margin-top: 14px;
-        font-size: clamp(2.25rem, 4vw, 3.7rem);
-        letter-spacing: -.045em;
-      }
-
-      .policy-accordion {
-        gap: 12px;
-      }
-
-      .policy-accordion details {
-        border: 1px solid #dce5ef;
-        border-radius: 18px;
-        background: rgba(255, 255, 255, .88);
-        box-shadow: 0 12px 32px rgba(35, 53, 88, .055);
-      }
-
-      .policy-accordion details[open] {
-        border-color: rgba(103, 52, 231, .2);
-        background: linear-gradient(125deg, #fff, #faf8ff);
-        box-shadow: 0 18px 42px rgba(58, 51, 126, .1);
-      }
-
-      .policy-accordion summary {
-        min-height: 76px;
-        padding: 0 22px;
-        font-size: .94rem;
-      }
-
-      .policy-accordion summary > span {
-        display: grid;
-        width: 32px;
-        height: 32px;
-        place-items: center;
-        border-radius: 10px;
-        background: var(--soft-purple);
-      }
-
-      .policy-accordion details > div {
-        padding: 0 24px 24px 70px;
-      }
-
-      .community-page footer {
-        border-top: 0;
-      }
-
-      @media (max-width: 980px) {
-        .community-hero-grid,
-        .community-intro-grid,
-        .partnership-grid,
-        .community-policies-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .community-hero-copy {
-          max-width: 760px;
-        }
-
-        .launch-card {
-          width: min(100%, 680px);
-        }
-
-        .community-intro-copy,
-        .community-policies-intro {
-          position: static;
-        }
-
-        .community-intro-copy .community-lead {
-          max-width: 620px;
-        }
-      }
-
-      @media (max-width: 760px) {
-        .community-hero {
-          padding-top: 58px;
-        }
-
-        .community-hero-copy h1 {
-          font-size: clamp(3.15rem, 15vw, 5rem);
-        }
-
-        .community-hero-points {
-          align-items: stretch;
-          flex-direction: column;
-        }
-
-        .community-hero-points li {
-          width: 100%;
-        }
-
-        .simple-steps,
-        .community-video-grid,
-        .partnership-options {
-          grid-template-columns: 1fr;
-        }
-
-        .community-video-grid > .video-empty-state {
-          flex-direction: column;
-          text-align: center;
-        }
-
-        #community-videos .section-head {
-          align-items: flex-start;
-        }
-
-        .partnership-grid {
-          padding: 32px 22px;
-          border-radius: 24px;
-        }
-
-        .policy-accordion summary {
-          grid-template-columns: 38px 1fr 26px;
-          padding: 0 14px;
-          font-size: .85rem;
-        }
-
-        .policy-accordion details > div {
-          padding: 0 16px 22px 62px;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .community-page *,
-        .community-page *::before,
-        .community-page *::after {
-          scroll-behavior: auto !important;
-          transition: none !important;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="../style.css?v=8" />
   </head>
 
   <body class="community-page">
@@ -792,30 +93,113 @@
             </ul>
           </div>
 
-          <aside class="launch-card" aria-labelledby="launch-heading">
-            <div class="launch-card-top">
-              <span class="launch-label">Official community launch</span>
-              <span class="launch-status">Launched</span>
-            </div>
-
-            <div class="launch-date" aria-label="2 August 2026">
-              <span class="launch-day">02</span>
-              <span class="launch-month">August</span>
-              <span class="launch-year">2026</span>
-            </div>
-
-            <div class="launch-divider"></div>
-
-            <div class="launch-location">
-              <span class="launch-location-icon" aria-hidden="true">⌖</span>
-              <div>
-                <h2 id="launch-heading">Empangeni, KwaZulu-Natal</h2>
-                <p>Launched at the official BIH studio.</p>
-              </div>
-            </div>
-          </aside>
+          <figure class="community-launch-media">
+            <img
+              src="../assets/community/community-launch.webp"
+              alt="Beacon Innovation Hub officially launches its Innovation Community"
+              width="1600"
+              height="900"
+              fetchpriority="high"
+            />
+            <figcaption class="launch-compact">
+              <span class="launch-compact-date" aria-label="2 August 2026">
+                <strong>02</strong>
+                <span>Aug<br />2026</span>
+              </span>
+              <span class="launch-compact-place">
+                Official BIH Studio
+                <small>Empangeni, KwaZulu-Natal</small>
+              </span>
+            </figcaption>
+          </figure>
         </div>
       </header>
+
+      <section class="community-gallery-band" aria-labelledby="community-gallery-heading">
+        <div class="wrap">
+          <div class="section-head community-gallery-head">
+            <div>
+              <div class="eyebrow">Inside the community</div>
+              <h2 id="community-gallery-heading">People. Ideas. Momentum.</h2>
+            </div>
+            <p>Moments from the BIH Community launch and studio.</p>
+          </div>
+
+          <div class="community-photo-grid">
+            <figure class="community-photo-card community-photo-wide">
+              <img
+                src="../assets/community/community-team-01.webp"
+                alt="BIH community members together at the studio"
+                width="1600"
+                height="1068"
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>Community in action</figcaption>
+            </figure>
+
+            <figure class="community-photo-card community-photo-wide">
+              <img
+                src="../assets/community/community-moment-01.webp"
+                alt="A BIH community member at the official studio"
+                width="1600"
+                height="1068"
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>Ideas taking shape</figcaption>
+            </figure>
+
+            <figure class="community-photo-card">
+              <img
+                src="../assets/community/community-team-02.webp"
+                alt="Two BIH community members at the studio"
+                width="1600"
+                height="1068"
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>Building together</figcaption>
+            </figure>
+
+            <figure class="community-photo-card">
+              <img
+                src="../assets/community/community-team-03.webp"
+                alt="Three BIH community members at the studio"
+                width="1600"
+                height="1068"
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>Fresh perspectives</figcaption>
+            </figure>
+
+            <figure class="community-photo-card">
+              <img
+                src="../assets/community/community-moment-02.webp"
+                alt="BIH community members during a studio moment"
+                width="1600"
+                height="1068"
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>Shared ambition</figcaption>
+            </figure>
+
+            <figure class="community-photo-card community-brand-card">
+              <img
+                src="../assets/community/community-brand.webp"
+                alt="Beacon Innovation Hub logo and Where Ideas Transform the Future tagline"
+                width="1200"
+                height="1200"
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>Where ideas transform the future</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
 
       <section id="how-it-works" class="community-intro" aria-labelledby="how-heading">
         <div class="wrap community-intro-grid">
@@ -864,10 +248,7 @@
             class="community-video-grid"
             aria-live="polite"
           >
-            <div class="empty video-empty-state">
-              <span class="video-empty-icon" aria-hidden="true">▶</span>
-              <div><h3>Loading video updates</h3><p>Please wait a moment.</p></div>
-            </div>
+            <div class="empty">Loading video updates…</div>
           </div>
         </div>
       </section>
@@ -1008,22 +389,14 @@
                 `;
               }).join('')
             : `
-              <div class="empty video-empty-state">
-                <span class="video-empty-icon" aria-hidden="true">▶</span>
-                <div>
-                  <h3>No community videos yet</h3>
-                  <p>Add a YouTube link to an update and select <strong>Show on Community page</strong> in the admin dashboard.</p>
-                </div>
+              <div class="empty">
+                Add a YouTube link to an update and select
+                <strong>Show on Community page</strong> in the admin dashboard.
               </div>
             `;
         } catch (error) {
           console.error('Unable to load community videos:', error);
-          root.innerHTML = `
-            <div class="empty video-empty-state">
-              <span class="video-empty-icon" aria-hidden="true">!</span>
-              <div><h3>Videos unavailable</h3><p>Video updates could not be loaded right now.</p></div>
-            </div>
-          `;
+          root.innerHTML = '<div class="empty">Video updates could not be loaded.</div>';
         }
       }
 
