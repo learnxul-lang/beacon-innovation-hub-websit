@@ -480,7 +480,7 @@
     const youtubeField = `
       <div class="field">
         <label for="f-youtube">
-          YouTube video URL
+          YouTube video URL (optional)
         </label>
 
         <input
@@ -488,6 +488,27 @@
           type="url"
           placeholder="https://youtube.com/watch?v=..."
         >
+
+        <p class="hint">
+          Paste a YouTube video, Short or live-stream link.
+        </p>
+      </div>
+    `;
+
+    const communityVideoField = `
+      <div class="field">
+        <label for="f-community-video">
+          Community page video
+        </label>
+
+        <select id="f-community-video">
+          <option value="">Do not show on Community page</option>
+          <option value="yes">Show on Community page</option>
+        </select>
+
+        <p class="hint">
+          The video will appear in Latest videos after this update is published.
+        </p>
       </div>
     `;
 
@@ -528,6 +549,8 @@
       commonFields +
       categoryField +
       contentField +
+      youtubeField +
+      communityVideoField +
       relatedLinkFields +
       tagsField +
       imageField
@@ -743,6 +766,35 @@
 
       post.youtubeUrl =
         youtubeInput?.value.trim() || '';
+
+      if (
+        post.youtubeUrl &&
+        !youtubeId(post.youtubeUrl)
+      ) {
+        throw new Error(
+          'Enter a valid YouTube video, Short or live-stream URL.'
+        );
+      }
+
+      const communityVideoInput =
+        getElement('f-community-video');
+
+      post.tags = post.tags.filter(
+        tag => tag.toLowerCase() !== 'community-video'
+      );
+
+      if (
+        type === 'update' &&
+        communityVideoInput?.value === 'yes'
+      ) {
+        if (!post.youtubeUrl) {
+          throw new Error(
+            'Add a YouTube URL before showing this update on the Community page.'
+          );
+        }
+
+        post.tags.push('community-video');
+      }
 
       const linkUrlInput =
         getElement('f-linkurl');
@@ -1104,6 +1156,9 @@
       const youtubeInput =
         getElement('f-youtube');
 
+      const communityVideoInput =
+        getElement('f-community-video');
+
       const linkUrlInput =
         getElement('f-linkurl');
 
@@ -1133,13 +1188,26 @@
       if (tagsInput) {
         tagsInput.value =
           Array.isArray(post.tags)
-            ? post.tags.join(', ')
+            ? post.tags
+                .filter(tag => tag.toLowerCase() !== 'community-video')
+                .join(', ')
             : '';
       }
 
       if (youtubeInput) {
         youtubeInput.value =
           post.youtubeUrl || '';
+      }
+
+      if (communityVideoInput) {
+        const tags = Array.isArray(post.tags)
+          ? post.tags.map(tag => tag.toLowerCase())
+          : [];
+
+        communityVideoInput.value =
+          tags.includes('community-video')
+            ? 'yes'
+            : '';
       }
 
       if (linkUrlInput) {
