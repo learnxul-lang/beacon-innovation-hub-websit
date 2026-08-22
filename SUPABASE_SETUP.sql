@@ -1,7 +1,3 @@
--- Beacon Innovation Hub — password-only client login mode.
--- WARNING: the password is stored in public JavaScript. These policies allow
--- anonymous browser clients to create, update and delete content. This is
--- convenient but is NOT secure. Use only as a temporary setup.
 
 create extension if not exists pgcrypto;
 
