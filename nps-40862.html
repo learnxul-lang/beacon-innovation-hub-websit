@@ -138,7 +138,7 @@
     <div class="wrap">
 
       <!-- =====================================================
-           Password-only login
+           Supabase administrator login
            ===================================================== -->
 
       <section
@@ -168,6 +168,24 @@
           </p>
 
           <form id="login-form">
+
+            <div
+              class="field"
+              style="text-align:left"
+            >
+              <label for="login-email">
+                Administrator email
+              </label>
+
+              <input
+                id="login-email"
+                name="email"
+                type="email"
+                required
+                autocomplete="username"
+                placeholder="Enter administrator email"
+              >
+            </div>
 
             <div
               class="field"
@@ -210,7 +228,7 @@
               Private administration area.
             </strong>
 
-            Enter the administrator password to continue.
+            Sign in with an approved administrator email and password to continue.
           </div>
 
         </div>
@@ -350,11 +368,12 @@
               </h3>
 
               <p class="hint">
-                This website currently uses a temporary password-only login.
+                Administrator access is authenticated by Supabase Auth and
+                checked against the BIH administrator allow-list.
               </p>
 
               <div class="admin-note">
-                Password location: <code>admin.js</code>
+                Only approved accounts in <code>admin_users</code> can manage content.
               </div>
 
             </div>
@@ -368,8 +387,8 @@
               </h3>
 
               <p class="hint">
-                Open <code>admin.js</code> and change the
-                <code>ADMIN_PASSWORD</code> value, then commit and redeploy.
+                Administrator passwords are managed by Supabase Auth.
+                Never place passwords or other secrets in repository files.
               </p>
 
             </div>
@@ -588,10 +607,11 @@
        Supabase must load before store.js and admin.js.
        ========================================================= -->
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js?v=4"></script>
-  <script src="store.js?v=4"></script>
+  <script src="store.js?v=6"></script>
   <script src="main.js?v=4"></script>
-  <script src="admin.js?v=5"></script>
+  <script src="admin.js?v=6"></script>
 
 </body>
 </html>

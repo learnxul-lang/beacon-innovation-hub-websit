@@ -1,4 +1,4 @@
-/* Beacon Innovation Hub — password-only admin with direct Supabase REST access. */
+/* Beacon Innovation Hub — public reads plus authenticated Supabase admin access. */
 
 (() => {
   'use strict';
@@ -14,13 +14,21 @@
   const baseUrl = String(cfg.url).replace(/\/$/, '');
   const apiKey = String(cfg.key);
 
+  const client =
+    window.supabase?.createClient
+      ? window.supabase.createClient(baseUrl, apiKey)
+      : null;
+
   const dbType = type => type === 'media' ? 'gallery' : type;
   const uiType = type => type === 'gallery' ? 'media' : type;
 
   function headers(extra = {}) {
+    const accessToken =
+      window.BIH_SUPABASE_SESSION?.access_token || apiKey;
+
     return {
       apikey: apiKey,
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${accessToken}`,
       ...extra
     };
   }
@@ -74,7 +82,8 @@
       linkUrl: row.related_link_url || '',
       linkLabel: row.related_link_label || '',
       status: row.status || 'published',
-      slug: row.slug || ''
+      slug: row.slug || '',
+      authorId: row.author_id || ''
     };
   }
 
@@ -176,6 +185,9 @@
     }
 
     const baseSlug = slugify(post.title);
+    const currentUserId =
+      window.BIH_SUPABASE_SESSION?.user?.id || '';
+
     const payload = {
       type: dbType(post.type),
       title: post.title,
@@ -192,7 +204,9 @@
       event_date: post.eventDate || null,
       registration_url: post.registrationUrl || null,
       status: post.status || 'published',
-      author_id: null,
+      author_id: post.id
+        ? (post.authorId || currentUserId || null)
+        : (currentUserId || null),
       published_at: post.date || new Date().toISOString(),
       category: post.category || null
     };
@@ -247,6 +261,7 @@
   }
 
   window.STORE = {
+    client,
     getAll,
     byType,
     getById,

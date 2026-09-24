@@ -9,9 +9,6 @@
      Configuration
      ========================================================================== */
 
-  const ADMIN_PASSWORD = 'BeaconAdmin@2026';
-  const SESSION_KEY = 'bih_admin_session';
-
   const TYPE_LABELS = {
     update: 'Update',
     event: 'Event',
@@ -142,8 +139,33 @@
   }
 
   /* ==========================================================================
-     Password-only authentication
+     Supabase authentication
      ========================================================================== */
+
+  function setActiveSession(session) {
+    window.BIH_SUPABASE_SESSION = session || null;
+  }
+
+  async function isApprovedAdministrator(session) {
+    if (!session?.user?.id) {
+      return false;
+    }
+
+    const client = getClient();
+
+    const { data, error } = await client
+      .from('admin_users')
+      .select('user_id, role')
+      .eq('user_id', session.user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return Boolean(data);
+  }
 
   function showLogin() {
     const loginBox = getElement('login-box');
@@ -164,6 +186,8 @@
     const loginBox = getElement('login-box');
     const dashboard = getElement('dashboard');
     const sessionPill = document.querySelector('.session-pill');
+    const email =
+      window.BIH_SUPABASE_SESSION?.user?.email || '';
 
     if (loginBox) {
       loginBox.hidden = true;
@@ -176,7 +200,9 @@
     }
 
     if (sessionPill) {
-      sessionPill.textContent = 'Administrator signed in';
+      sessionPill.textContent = email
+        ? `Administrator: ${email}`
+        : 'Administrator signed in';
     }
 
     if (!dashboardInitialised) {
@@ -187,57 +213,137 @@
 
   function setLoginLoading(loading) {
     const button = getElement('login-form')?.querySelector('button[type="submit"]');
-    if (!button) return;
+
+    if (!button) {
+      return;
+    }
 
     button.disabled = loading;
     button.textContent = loading ? 'Signing in…' : 'Sign in';
   }
 
-  function handleLogin(event) {
+  async function handleLogin(event) {
     event.preventDefault();
 
     const loginError = getElement('login-error');
+    const emailInput = getElement('login-email');
     const passwordInput = getElement('login-pass');
+
     clearMessage(loginError);
 
-    if (!passwordInput) {
-      setMessage(loginError, 'The password field is missing.');
+    const email = emailInput?.value.trim() || '';
+    const password = passwordInput?.value || '';
+
+    if (!email || !password) {
+      setMessage(
+        loginError,
+        'Enter your administrator email and password.'
+      );
       return;
     }
 
     setLoginLoading(true);
 
     try {
-      if (passwordInput.value !== ADMIN_PASSWORD) {
-        throw new Error('Incorrect administrator password.');
+      const client = getClient();
+
+      const { data, error } =
+        await client.auth.signInWithPassword({
+          email,
+          password
+        });
+
+      if (error) {
+        throw error;
       }
 
-      sessionStorage.setItem(SESSION_KEY, 'true');
+      const session = data?.session;
+
+      if (!session) {
+        throw new Error(
+          'Supabase did not create an administrator session.'
+        );
+      }
+
+      setActiveSession(session);
+
+      if (!(await isApprovedAdministrator(session))) {
+        await client.auth.signOut();
+        setActiveSession(null);
+
+        throw new Error(
+          'This account is not approved for BIH administration.'
+        );
+      }
+
       passwordInput.value = '';
+
       showDashboard();
       showToast('Administrator login successful.');
     } catch (error) {
-      setMessage(loginError, error?.message || 'The administrator login failed.');
+      setMessage(
+        loginError,
+        error?.message || 'The administrator login failed.'
+      );
     } finally {
       setLoginLoading(false);
     }
   }
 
-  function handleLogout() {
-    sessionStorage.removeItem(SESSION_KEY);
-    dashboardInitialised = false;
-    editingId = null;
-    pendingImage = '';
-    showLogin();
-    showToast('Signed out successfully.');
+  async function handleLogout() {
+    try {
+      const client = getClient();
+      const { error } = await client.auth.signOut();
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.error('Administrator sign-out failed:', error);
+    } finally {
+      setActiveSession(null);
+      dashboardInitialised = false;
+      editingId = null;
+      pendingImage = '';
+      showLogin();
+      showToast('Signed out successfully.');
+    }
   }
 
-  function restoreAdministratorSession() {
-    if (sessionStorage.getItem(SESSION_KEY) === 'true') {
-      showDashboard();
-    } else {
-      showLogin();
+  async function restoreAdministratorSession() {
+    const client = getClient();
+
+    const { data, error } =
+      await client.auth.getSession();
+
+    if (error) {
+      throw error;
     }
+
+    const session = data?.session;
+
+    if (!session) {
+      setActiveSession(null);
+      showLogin();
+      return;
+    }
+
+    setActiveSession(session);
+
+    if (!(await isApprovedAdministrator(session))) {
+      await client.auth.signOut();
+      setActiveSession(null);
+      showLogin();
+
+      setMessage(
+        getElement('login-error'),
+        'This signed-in account is not approved for BIH administration.'
+      );
+
+      return;
+    }
+
+    showDashboard();
   }
 
   /* ==========================================================================
@@ -1367,16 +1473,38 @@
      Application startup
      ========================================================================== */
 
-  function initialiseApplication() {
-    getElement('login-form')?.addEventListener('submit', handleLogin);
-    getElement('logout-btn')?.addEventListener('click', handleLogout);
+  async function initialiseApplication() {
+    getElement('login-form')?.addEventListener('submit', event => {
+      void handleLogin(event);
+    });
+
+    getElement('logout-btn')?.addEventListener('click', () => {
+      void handleLogout();
+    });
 
     try {
       ensureStore();
-      restoreAdministratorSession();
+
+      const client = getClient();
+
+      if (!client?.auth) {
+        throw new Error('Supabase Auth could not be loaded.');
+      }
+
+      client.auth.onAuthStateChange((_event, session) => {
+        setActiveSession(session);
+
+        if (!session) {
+          dashboardInitialised = false;
+          showLogin();
+        }
+      });
+
+      await restoreAdministratorSession();
     } catch (error) {
       console.error('Administrator application failed to start:', error);
       showLogin();
+
       setMessage(
         getElement('login-error'),
         error?.message || 'The administrator system could not be loaded.'
@@ -1386,6 +1514,8 @@
 
   document.addEventListener(
     'DOMContentLoaded',
-    initialiseApplication
+    () => {
+      void initialiseApplication();
+    }
   );
 })();
