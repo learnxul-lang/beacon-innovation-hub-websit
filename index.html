@@ -71,15 +71,38 @@
   content="https://beaconinnovationhub.co.za/"
 />
 
-<!-- Google site name structured data -->
+<!-- Google site name and organization structured data -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "WebSite",
-  "@id": "https://beaconinnovationhub.co.za/#website",
-  "url": "https://beaconinnovationhub.co.za/",
-  "name": "Beacon Innovation Hub",
-  "alternateName": "BIH"
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://beaconinnovationhub.co.za/#organization",
+      "name": "Beacon Innovation Hub",
+      "alternateName": "BIH",
+      "url": "https://beaconinnovationhub.co.za/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://beaconinnovationhub.co.za/beacon-mark.webp"
+      },
+      "sameAs": [
+        "https://za.linkedin.com/company/beacon-innovation-hub",
+        "https://github.com/Beacon-Innovation-Hub"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://beaconinnovationhub.co.za/#website",
+      "url": "https://beaconinnovationhub.co.za/",
+      "name": "Beacon Innovation Hub",
+      "alternateName": "BIH",
+      "inLanguage": "en",
+      "publisher": {
+        "@id": "https://beaconinnovationhub.co.za/#organization"
+      }
+    }
+  ]
 }
 </script>
 
